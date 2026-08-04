@@ -103,6 +103,51 @@ p {
   border-bottom: 1px solid var(--line);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.install-btn {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.install-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 36, 33, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.install-modal {
+  width: min(420px, 100%);
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.install-modal h2 {
+  color: var(--brand);
+  font-size: 1.35rem;
+}
+
+.install-modal ol {
+  margin: 0.75rem 0;
+  padding-left: 1.2rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
 .brand {
   display: flex;
   align-items: center;

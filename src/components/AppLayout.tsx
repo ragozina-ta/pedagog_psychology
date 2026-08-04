@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { InstallAppButton } from './InstallAppButton'
 
 const links = [
   { to: '/', label: 'Главная', ico: '⌂', end: true },
@@ -30,13 +31,16 @@ export function AppLayout() {
             <span>пространство заботы о педагоге</span>
           </div>
         </NavLink>
-        <nav className="desktop-nav">
-          {allLinks.map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="topbar-actions">
+          <InstallAppButton className="btn install-btn" label="Скачать" />
+          <nav className="desktop-nav">
+            {allLinks.map((l) => (
+              <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
       </header>
       <main className="main">
         <Outlet />

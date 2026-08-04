@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { InstallAppButton } from '../components/InstallAppButton'
 import { affirmationForDate } from '../data/affirmations'
 import { cardForDate } from '../data/cards'
 
@@ -24,6 +25,9 @@ export function HomePage() {
           Инструменты самоподдержки прямо в браузере: баланс, дневник, карта желаний и бережный
           собеседник. Данные хранятся у вас на устройстве.
         </p>
+        <div className="btn-row">
+          <InstallAppButton className="btn" label="Скачать приложение" />
+        </div>
       </section>
 
       <div className="panel" style={{ marginBottom: '1.25rem' }}>
