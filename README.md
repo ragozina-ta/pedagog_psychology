@@ -34,3 +34,26 @@ npm run preview
 7. **Ресурсный банк** — техники, скрипты, идеи, медитации
 
 API-ключ для ИИ задаётся в **Настройки** и хранится только в браузере.
+
+## GitHub Pages
+
+Сайт: https://ragozina-ta.github.io/pedagog_psychology/
+
+### Один раз в настройках репозитория
+
+1. Откройте **Settings → Pages**
+2. **Source**: GitHub Actions
+3. Закоммитьте и запушьте изменения в `main` (workflow `.github/workflows/deploy-pages.yml` соберёт и задеплоит `dist`)
+
+### После пуша
+
+- Вкладка **Actions** → дождитесь зелёного workflow **Deploy GitHub Pages**
+- Через 1–2 минуты откройте ссылку выше
+- Установка PWA: в Chrome/Edge — «Установить приложение»; на iPhone — Safari → Поделиться → На экран «Домой»
+
+Локальная проверка сборки с тем же `base`:
+
+```bash
+npm run build
+npm run preview
+```
