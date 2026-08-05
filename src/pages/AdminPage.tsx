@@ -32,7 +32,7 @@ export function AdminPage() {
     })()
   }, [])
 
-  if (profile && profile.role !== 'admin') return <Navigate to="/garden" replace />
+  if (profile && profile.role !== 'admin') return <Navigate to="/app/garden" replace />
 
   const downloadReport = async () => {
     const res = await fetch(adminApi.reportUrl(), {

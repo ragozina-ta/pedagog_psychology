@@ -42,7 +42,7 @@ export function AutoPushSubscribe() {
   return (
     <div className="hint" style={{ margin: '0 0 1rem' }}>
       Уведомления: {hint}{' '}
-      <Link to="/settings">Настройки</Link>
+      <Link to="/app/settings">Настройки</Link>
     </div>
   )
 }

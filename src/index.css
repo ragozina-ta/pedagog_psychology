@@ -809,6 +809,121 @@ a.btn {
   margin: 2rem auto;
 }
 
+.landing {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  overflow: hidden;
+  background:
+    linear-gradient(165deg, rgba(49, 70, 79, 0.55) 0%, rgba(112, 58, 20, 0.35) 45%, rgba(205, 193, 173, 0.2) 100%),
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(236, 208, 156, 0.55), transparent 60%),
+    var(--bg);
+}
+
+.landing::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 55%;
+  background: radial-gradient(circle at 30% 40%, rgba(193, 134, 54, 0.25), transparent 55%);
+  animation: landing-glow 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.landing-web {
+  position: absolute;
+  top: max(0.85rem, env(safe-area-inset-top));
+  right: max(0.85rem, env(safe-area-inset-right));
+  z-index: 2;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brand);
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(247, 241, 230, 0.88);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  animation: rise 0.5s ease both;
+}
+
+.landing-web:hover {
+  background: #fff;
+}
+
+.landing-stage {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  text-align: center;
+  display: grid;
+  gap: 2rem;
+}
+
+.landing-brand {
+  animation: rise 0.55s ease both;
+}
+
+.landing-logo {
+  margin: 0 auto 1rem;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(49, 70, 79, 0.22);
+  animation: landing-float 5.5s ease-in-out infinite;
+}
+
+.landing-title {
+  font-size: clamp(2.6rem, 10vw, 3.6rem);
+  color: var(--brand);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.55rem;
+  text-shadow: 0 2px 0 rgba(236, 208, 156, 0.35);
+}
+
+.landing-lead {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.45;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+.landing-cta {
+  animation: rise 0.7s 0.12s ease both;
+}
+
+.landing-download {
+  width: 100%;
+  min-height: 58px;
+  font-size: 1.12rem;
+  font-weight: 700;
+  padding: 0.95rem 1.4rem;
+  border-radius: 16px;
+  box-shadow: 0 14px 32px rgba(112, 58, 20, 0.28);
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes landing-glow {
+  from {
+    opacity: 0.65;
+    transform: translateX(-4%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(4%);
+  }
+}
+
 .desktop-nav {
   display: none;
   gap: 0.3rem;

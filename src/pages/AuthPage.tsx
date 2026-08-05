@@ -24,7 +24,7 @@ export function AuthPage() {
     setError('')
     try {
       await doLogin()
-      nav('/')
+      nav('/app')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка')
     } finally {

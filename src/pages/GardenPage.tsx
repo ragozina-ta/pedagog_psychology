@@ -101,11 +101,11 @@ export function GardenPage() {
           <button type="button" className="btn secondary" onClick={() => void createInvite()}>
             Пригласить друга
           </button>
-          <Link className="btn ghost" to="/settings">
+          <Link className="btn ghost" to="/app/settings">
             Настройки
           </Link>
           {profile?.role === 'admin' && (
-            <Link className="btn ghost" to="/admin">
+            <Link className="btn ghost" to="/app/admin">
               Панель администратора
             </Link>
           )}

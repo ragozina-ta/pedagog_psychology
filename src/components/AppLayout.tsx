@@ -21,23 +21,23 @@ function ChatNavIcon() {
 }
 
 const bottom: { to: string; label: string; ico: ReactNode; end?: boolean }[] = [
-  { to: '/', label: 'Главная', ico: '⌂', end: true },
-  { to: '/garden', label: 'Мой сад', ico: '❀' },
-  { to: '/diary', label: 'Дневник', ico: '✎' },
-  { to: '/chat', label: 'Чат', ico: <ChatNavIcon /> },
+  { to: '/app', label: 'Главная', ico: '⌂', end: true },
+  { to: '/app/garden', label: 'Мой сад', ico: '❀' },
+  { to: '/app/diary', label: 'Дневник', ico: '✎' },
+  { to: '/app/chat', label: 'Чат', ico: <ChatNavIcon /> },
 ]
 
 const desktop = [
-  { to: '/', label: 'Главная', end: true },
-  { to: '/garden', label: 'Сад' },
-  { to: '/diary', label: 'Дневник' },
-  { to: '/chat', label: 'Чат' },
-  { to: '/wheel', label: 'Баланс' },
-  { to: '/affirmations', label: 'Аффирмации' },
-  { to: '/cards', label: 'Карточки' },
-  { to: '/resources', label: 'Банк' },
-  { to: '/wish-map', label: 'Желания' },
-  { to: '/settings', label: 'Настройки' },
+  { to: '/app', label: 'Главная', end: true },
+  { to: '/app/garden', label: 'Сад' },
+  { to: '/app/diary', label: 'Дневник' },
+  { to: '/app/chat', label: 'Чат' },
+  { to: '/app/wheel', label: 'Баланс' },
+  { to: '/app/affirmations', label: 'Аффирмации' },
+  { to: '/app/cards', label: 'Карточки' },
+  { to: '/app/resources', label: 'Банк' },
+  { to: '/app/wish-map', label: 'Желания' },
+  { to: '/app/settings', label: 'Настройки' },
 ]
 
 export function AppLayout() {
@@ -46,7 +46,7 @@ export function AppLayout() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <NavLink to="/" className="brand">
+        <NavLink to="/app" className="brand">
           <div className="brand-mark">
             <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width={40} height={40} />
           </div>
@@ -56,7 +56,7 @@ export function AppLayout() {
           </div>
         </NavLink>
         <div className="topbar-actions">
-          <NavLink to="/settings" className="btn ghost install-btn">
+          <NavLink to="/app/settings" className="btn ghost install-btn">
             Настройки
           </NavLink>
           <InstallAppButton className="btn install-btn" label="Скачать" />
@@ -72,7 +72,7 @@ export function AppLayout() {
               </NavLink>
             ))}
             {profile?.role === 'admin' && (
-              <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/app/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Админ
               </NavLink>
             )}

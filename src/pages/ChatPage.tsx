@@ -137,7 +137,7 @@ export function ChatPage() {
                       Попробуйте из ресурсного банка:
                     </span>
                     {m.resources.map((r) => (
-                      <Link key={r.id} className="chip active" to={`/resources?open=${encodeURIComponent(r.id)}`}>
+                      <Link key={r.id} className="chip active" to={`/app/resources?open=${encodeURIComponent(r.id)}`}>
                         {r.title}
                       </Link>
                     ))}

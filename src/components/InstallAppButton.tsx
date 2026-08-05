@@ -19,7 +19,7 @@ export function InstallAppButton({ className = 'btn', label = 'Скачать п
     return (
       <button
         type="button"
-        className={`${className} secondary`}
+        className={className.includes('landing-download') ? className : `${className} secondary`}
         onClick={() => setShowIosHelp(true)}
         title="Откройте меню браузера → Установить приложение"
       >

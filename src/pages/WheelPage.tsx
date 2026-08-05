@@ -287,7 +287,7 @@ export function WheelPage() {
                   <strong>{c.title}</strong> — {c.task}
                 </div>
               ))}
-              <Link className="btn secondary" to="/cards">
+              <Link className="btn secondary" to="/app/cards">
                 К колоде карточек
               </Link>
             </>

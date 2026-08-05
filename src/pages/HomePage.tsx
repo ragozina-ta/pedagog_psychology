@@ -97,7 +97,7 @@ export function HomePage() {
         </div>
         {mood && mood !== 'happy' && (
           <div className="btn-row">
-            <Link className="btn secondary" to="/resources?open=r1">
+            <Link className="btn secondary" to="/app/resources?open=r1">
               Сделать технику из ресурсного банка
             </Link>
           </div>
@@ -112,7 +112,7 @@ export function HomePage() {
           <button type="button" className="btn" disabled={doneCard} onClick={() => void completeCard()}>
             {doneCard ? 'Выполнено' : 'Выполнил'}
           </button>
-          <Link className="btn secondary" to="/cards">
+          <Link className="btn secondary" to="/app/cards">
             Все карточки
           </Link>
         </div>
@@ -124,7 +124,7 @@ export function HomePage() {
           {affirmation.text}
         </PlayingCard>
         <div className="btn-row" style={{ marginTop: 0 }}>
-          <Link className="btn ghost" to="/affirmations">
+          <Link className="btn ghost" to="/app/affirmations">
             Открыть колоду
           </Link>
         </div>
@@ -132,11 +132,11 @@ export function HomePage() {
 
       <div className="grid-modules">
         {[
-          { to: '/wheel', title: 'Колесо баланса', text: '8 сфер · сектора' },
-          { to: '/resources', title: 'Ресурсный банк', text: 'Техники и скрипты' },
-          { to: '/diary', title: 'Дневник', text: 'Рефлексия без давления' },
-          { to: '/wish-map', title: 'Карта желаний', text: 'Цели, мечты и планы на будущее' },
-          { to: '/chat', title: 'Выговориться', text: 'Компас и чат школы' },
+          { to: '/app/wheel', title: 'Колесо баланса', text: '8 сфер · сектора' },
+          { to: '/app/resources', title: 'Ресурсный банк', text: 'Техники и скрипты' },
+          { to: '/app/diary', title: 'Дневник', text: 'Рефлексия без давления' },
+          { to: '/app/wish-map', title: 'Карта желаний', text: 'Цели, мечты и планы на будущее' },
+          { to: '/app/chat', title: 'Выговориться', text: 'Компас и чат школы' },
         ].map((m) => (
           <Link key={m.to} to={m.to} className="module-link">
             <div className="eyebrow">перейти</div>

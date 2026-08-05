@@ -58,7 +58,7 @@ async def create_invite(user: User = Depends(get_current_user), db: AsyncSession
     db.add(inv)
     await db.commit()
     await db.refresh(inv)
-    return InviteOut(token=inv.token, url_path=f"/invite/{inv.token}")
+    return InviteOut(token=inv.token, url_path=f"/app/invite/{inv.token}")
 
 
 @router.post("/accept/{token}", response_model=FriendOut)

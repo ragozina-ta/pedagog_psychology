@@ -28,7 +28,7 @@ export function InvitePage() {
     <div className="panel">
       <h1 style={{ color: 'var(--brand)' }}>Приглашение</h1>
       <p>{msg}</p>
-      <Link className="btn" to="/garden">
+      <Link className="btn" to="/app/garden">
         В сад
       </Link>
     </div>
@@ -58,7 +58,7 @@ export function SharePage() {
         Уровень {p.level} · серия {p.streak} · очки {p.points} · сад {p.garden_plants}
       </p>
       <p className="muted">{p.school?.name}</p>
-      <Link className="btn secondary" to="/">
+      <Link className="btn secondary" to="/app">
         В Ресурс
       </Link>
     </div>
