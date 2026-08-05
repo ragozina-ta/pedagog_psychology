@@ -2,6 +2,13 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
+/** Demo credentials (frontend-only). */
+const TEST_ACCOUNT = {
+  email: 'test@test.com',
+  password: '123456',
+  full_name: 'Тестовый педагог',
+}
+
 export function AuthPage() {
   const { login, register } = useAuth()
   const nav = useNavigate()
@@ -12,11 +19,22 @@ export function AuthPage() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+  const enterApp = async (doLogin: () => Promise<void>) => {
     setBusy(true)
     setError('')
     try {
+      await doLogin()
+      nav('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    await enterApp(async () => {
       if (mode === 'login') {
         await login(email, password)
       } else {
@@ -26,12 +44,24 @@ export function AuthPage() {
           full_name: fullName,
         })
       }
-      nav('/')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка')
-    } finally {
-      setBusy(false)
-    }
+    })
+  }
+
+  const onTestMode = async () => {
+    setEmail(TEST_ACCOUNT.email)
+    setPassword(TEST_ACCOUNT.password)
+    await enterApp(async () => {
+      try {
+        await login(TEST_ACCOUNT.email, TEST_ACCOUNT.password)
+      } catch {
+        // First run: create the demo account, then enter
+        await register({
+          email: TEST_ACCOUNT.email,
+          password: TEST_ACCOUNT.password,
+          full_name: TEST_ACCOUNT.full_name,
+        })
+      }
+    })
   }
 
   return (
@@ -59,7 +89,14 @@ export function AuthPage() {
         )}
         <div className="field">
           <label>Email</label>
-          <input type="text" inputMode="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            type="text"
+            inputMode="email"
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
         <div className="field">
           <label>Пароль</label>
@@ -72,9 +109,14 @@ export function AuthPage() {
           />
         </div>
         {error && <div className="hint">{error}</div>}
-        <button className="btn" type="submit" disabled={busy}>
-          {busy ? '…' : mode === 'login' ? 'Войти' : 'Создать аккаунт'}
-        </button>
+        <div className="btn-row" style={{ marginTop: 0 }}>
+          <button className="btn" type="submit" disabled={busy}>
+            {busy ? '…' : mode === 'login' ? 'Войти' : 'Создать аккаунт'}
+          </button>
+          <button type="button" className="btn secondary" disabled={busy} onClick={() => void onTestMode()}>
+            Тестовый режим
+          </button>
+        </div>
       </form>
       <p className="muted" style={{ marginTop: 12 }}>
         <Link to="/share/demo">Публичный профиль</Link> доступен по ссылке-токену после входа.
