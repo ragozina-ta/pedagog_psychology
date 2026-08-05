@@ -1,30 +1,8 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
-
-/** Храним событие на уровне модуля — иначе после ухода с лендинга prompt теряется. */
-let deferredPrompt: BeforeInstallPromptEvent | null = null
-let installedFlag = false
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((l) => l())
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return deferredPrompt
-}
-
-function getInstalledSnapshot() {
-  return installedFlag
 }
 
 function isIos() {
@@ -43,56 +21,41 @@ function isStandalone() {
   )
 }
 
-let listenersBound = false
-
-/** Вызывать как можно раньше (main), чтобы не пропустить beforeinstallprompt. */
-export function initPwaInstallListeners() {
-  bindGlobalListeners()
-}
-
-function bindGlobalListeners() {
-  if (listenersBound || typeof window === 'undefined') return
-  listenersBound = true
-  installedFlag = isStandalone()
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault()
-    deferredPrompt = e as BeforeInstallPromptEvent
-    emit()
-  })
-  window.addEventListener('appinstalled', () => {
-    installedFlag = true
-    deferredPrompt = null
-    emit()
-  })
-}
-
 export function usePwaInstall() {
-  const deferred = useSyncExternalStore(subscribe, getSnapshot, () => null)
-  const installed = useSyncExternalStore(
-    subscribe,
-    getInstalledSnapshot,
-    () => false,
-  )
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
+  const [installed, setInstalled] = useState(isStandalone)
   const [ios, setIos] = useState(false)
 
   useEffect(() => {
-    bindGlobalListeners()
-    installedFlag = isStandalone()
+    setInstalled(isStandalone())
     setIos(isIos() && !isStandalone())
-    emit()
+
+    const onBeforeInstall = (e: Event) => {
+      e.preventDefault()
+      setDeferred(e as BeforeInstallPromptEvent)
+    }
+    const onInstalled = () => {
+      setInstalled(true)
+      setDeferred(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstall)
+    window.addEventListener('appinstalled', onInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall)
+      window.removeEventListener('appinstalled', onInstalled)
+    }
   }, [])
 
   const canPrompt = Boolean(deferred) && !installed
   const canShow = !installed && (canPrompt || ios)
 
   const install = useCallback(async () => {
-    if (!deferredPrompt) return false
-    await deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    deferredPrompt = null
-    if (outcome === 'accepted') installedFlag = true
-    emit()
+    if (!deferred) return false
+    await deferred.prompt()
+    const { outcome } = await deferred.userChoice
+    setDeferred(null)
+    if (outcome === 'accepted') setInstalled(true)
     return outcome === 'accepted'
   }, [deferred])
 
