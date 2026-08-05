@@ -17,7 +17,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://resource:resource@db:5432/resource
       SECRET_KEY: change-me-in-production-super-secret-key
-      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,https://ragozina-ta.github.io
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,https://whatislav.online,https://www.whatislav.online,https://ragozina-ta.github.io
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       - db

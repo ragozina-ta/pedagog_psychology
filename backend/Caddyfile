@@ -1,0 +1,12 @@
+whatislav.online, www.whatislav.online {
+	encode gzip
+	reverse_proxy api:8000
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+	}
+}
+
+# Temporary access by IP until DNS/SSL are ready
+http://159.194.234.125 {
+	reverse_proxy api:8000
+}

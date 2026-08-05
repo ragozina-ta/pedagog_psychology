@@ -16,7 +16,16 @@ from app.schemas import LoginIn, RegisterIn, TokenOut
 router = APIRouter()
 
 
-@router.post("/register", response_model=TokenOut)
+@router.post(
+    "/register",
+    response_model=TokenOut,
+    summary="Регистрация",
+    description=(
+        "Создаёт пользователя. Укажите `create_school_name` (роль admin) "
+        "или `school_code` (роль teacher)."
+    ),
+    openapi_extra={"security": []},
+)
 async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)):
     exists = (await db.execute(select(User).where(User.email == body.email.lower()))).scalar_one_or_none()
     if exists:
@@ -53,7 +62,13 @@ async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)):
     )
 
 
-@router.post("/login", response_model=TokenOut)
+@router.post(
+    "/login",
+    response_model=TokenOut,
+    summary="Вход",
+    description="Возвращает JWT access и refresh токены.",
+    openapi_extra={"security": []},
+)
 async def login(body: LoginIn, db: AsyncSession = Depends(get_db)):
     user = (await db.execute(select(User).where(User.email == body.email.lower()))).scalar_one_or_none()
     if not user or not verify_password(body.password, user.password_hash):

@@ -2,6 +2,9 @@
 
 PWA + FastAPI: личный кабинет, сад, ачивки, друзья, чат школы, админ-панель.
 
+**Production API:** https://whatislav.online  
+**ReDoc:** https://whatislav.online/redoc  
+
 ## Быстрый старт
 
 ### Backend
@@ -15,21 +18,20 @@ copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-Опционально Postgres: `docker compose up -d` в `backend/` (см. `DATABASE_URL` в compose).
-
-Push-воркер: `python worker.py` (нужны VAPID-ключи в `.env`).
-
-ИИ: задайте `OPENAI_API_KEY` в `backend/.env`.
+Опционально Postgres: `docker compose up -d` в `backend/`.
 
 ### Frontend
 ```bash
 npm install
-# .env
-echo VITE_API_URL=http://127.0.0.1:8000 > .env
+# для локальной разработки с локальным API:
+# VITE_API_URL=http://127.0.0.1:8000
+# для работы с прод-API:
+# VITE_API_URL=https://whatislav.online
+cp .env.example .env
 npm run dev
 ```
 
-GitHub Pages: `VITE_API_URL` должен указывать на задеплоенный API (не на Pages).
+GitHub Pages собирается с `VITE_API_URL=https://whatislav.online` (см. `.github/workflows/deploy-pages.yml`).
 
 ## Роли
 - **teacher** — весь функционал, сад, друзья
