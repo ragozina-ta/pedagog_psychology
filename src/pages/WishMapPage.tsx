@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ImageCropModal } from '../components/ImageCropModal'
+import { WISH_STOCK_IMAGES, wishStockUrl } from '../data/wishStock'
 import { useAppStore } from '../store/useAppStore'
 import type { WishSectorId } from '../types'
 import { elementToPdf } from '../utils/pdf'
@@ -27,8 +28,8 @@ const INTRO_TEXT = `Карта желаний — это твоё личное �
 Выбирай картинки, которые откликаются тебе. Не надо объяснять — просто чувствуй.
 
 Можно:
+Выбрать из готовой галереи
 Загрузить свои фото
-Перетаскивать картинки внутри сектора
 Менять карту каждый месяц
 
 Не нужно:
@@ -74,6 +75,8 @@ export function WishMapPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const photoRef = useRef<HTMLInputElement>(null)
 
+  const sectorLabel = SECTORS.find((s) => s.id === sector)?.label ?? ''
+
   const dismissIntro = () => {
     try {
       localStorage.setItem(INTRO_KEY, '1')
@@ -95,6 +98,11 @@ export function WishMapPage() {
     const dataUrl = await readFile(files[0])
     setCropMode('photo')
     setCropSrc(dataUrl)
+  }
+
+  const addStockToSector = (file: string) => {
+    addWishImage(sector, wishStockUrl(file))
+    setStatus(`Добавлено в «${sectorLabel}»`)
   }
 
   const exportPdf = async () => {
@@ -154,7 +162,7 @@ export function WishMapPage() {
         </div>
         <div className="btn-row">
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-            Добавить картинку в сектор
+            Загрузить своё фото
           </button>
           <button type="button" className="btn secondary" onClick={() => photoRef.current?.click()}>
             Фото в центре
@@ -181,6 +189,25 @@ export function WishMapPage() {
           />
         </div>
         {status && <p className="muted">{status}</p>}
+      </div>
+
+      <div className="panel" style={{ marginBottom: '1rem' }}>
+        <h2 style={{ color: 'var(--brand)', fontSize: '1.05rem', marginBottom: '0.35rem' }}>Галерея образов</h2>
+        <p className="muted" style={{ marginBottom: '0.65rem' }}>
+          Нажмите картинку — она попадёт в сектор «{sectorLabel}». Свои фото можно загрузить кнопкой выше.
+        </p>
+        <div className="wish-stock-grid">
+          {WISH_STOCK_IMAGES.map((img) => (
+            <button
+              key={img.id}
+              type="button"
+              title="Добавить в выбранный сектор"
+              onClick={() => addStockToSector(img.file)}
+            >
+              <img src={wishStockUrl(img.file)} alt="" loading="lazy" />
+            </button>
+          ))}
+        </div>
       </div>
 
       <div
@@ -258,7 +285,7 @@ export function WishMapPage() {
         </div>
       </div>
       <p className="muted" style={{ marginTop: '0.75rem' }}>
-        Нажмите на картинку, чтобы удалить её с доски.
+        Нажмите на картинку на карте, чтобы удалить её.
       </p>
 
       {cropSrc && (
