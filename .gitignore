@@ -43,6 +43,11 @@ htmlcov/
 *.sqlite3
 backend/resource.db
 
+# VAPID private key (never commit)
+backend/vapid_private.pem
+backend/vapid_public.txt
+**/vapid_private.pem
+
 # Logs & debug
 logs/
 *.log

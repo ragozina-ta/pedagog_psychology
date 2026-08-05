@@ -19,6 +19,8 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
+    volumes:
+      - ./vapid_private.pem:/app/vapid_private.pem:ro
     environment:
       DATABASE_URL: postgresql+asyncpg://resource:${POSTGRES_PASSWORD:-resource_change_me}@db:5432/resource
       SECRET_KEY: ${SECRET_KEY}
@@ -27,7 +29,7 @@ services:
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-/app/vapid_private.pem}
       VAPID_MAILTO: ${VAPID_MAILTO:-mailto:admin@resource.app}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-https://whatislav.online}
     depends_on:
@@ -46,6 +48,27 @@ services:
       - caddy_config:/config
     depends_on:
       - api
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-u", "worker.py"]
+    volumes:
+      - ./vapid_private.pem:/app/vapid_private.pem:ro
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DATABASE_URL: postgresql+asyncpg://resource:${POSTGRES_PASSWORD:-resource_change_me}@db:5432/resource
+      SECRET_KEY: ${SECRET_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-/app/vapid_private.pem}
+      VAPID_MAILTO: ${VAPID_MAILTO:-mailto:admin@resource.app}
+      PUSH_TEST_MODE: ${PUSH_TEST_MODE:-1}
+      PUSH_TEST_INTERVAL_SEC: ${PUSH_TEST_INTERVAL_SEC:-30}
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:
