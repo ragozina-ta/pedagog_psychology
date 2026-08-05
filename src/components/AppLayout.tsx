@@ -7,7 +7,7 @@ const bottom = [
   { to: '/', label: 'Главная', ico: '⌂', end: true },
   { to: '/garden', label: 'Мой сад', ico: '❀' },
   { to: '/diary', label: 'Дневник', ico: '✎' },
-  { to: '/chat', label: 'Чат', ico: '◈' },
+  { to: '/chat', label: 'Чат', ico: '💬' },
 ]
 
 const desktop = [
@@ -30,12 +30,12 @@ export function AppLayout() {
     <div className="app-shell">
       <header className="topbar">
         <NavLink to="/" className="brand">
-          <div className="brand-mark">Р</div>
+          <div className="brand-mark">
+            <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width={40} height={40} />
+          </div>
           <div className="brand-text">
             <strong>Ресурс</strong>
-            <span>
-              {profile ? `${profile.full_name} · серия ${profile.streak}` : 'пространство заботы'}
-            </span>
+            <span>Поддержка педагога</span>
           </div>
         </NavLink>
         <div className="topbar-actions">

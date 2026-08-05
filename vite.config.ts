@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'icons/*.png', 'push-handler.js'],
+      includeAssets: ['favicon.svg', 'icons/*.png', 'push-handler.js', 'achievements/*.svg'],
       manifest: {
         id: `${base}`,
         name: 'Ресурс педагога',

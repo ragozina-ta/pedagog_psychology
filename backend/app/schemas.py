@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class TokenOut(BaseModel):
@@ -10,16 +10,24 @@ class TokenOut(BaseModel):
 
 
 class RegisterIn(BaseModel):
-    email: EmailStr
+    email: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=6)
     full_name: str = Field(min_length=1, max_length=255)
     school_code: str | None = None
-    create_school_name: str | None = None  # if set → become admin of new school
+    create_school_name: str | None = None  # legacy; ignored if empty
 
 
 class LoginIn(BaseModel):
-    email: EmailStr
+    email: str
     password: str
+
+
+class DiaryIn(BaseModel):
+    entry_date: date | None = None
+    mood: str = "5"  # "0".."10" (legacy happy|neutral|sad accepted by clients)
+    gratitude: str = ""
+    reflection: str = ""
+    intention: str = ""
 
 
 class SchoolOut(BaseModel):
@@ -55,14 +63,6 @@ class ProfileUpdate(BaseModel):
     years_experience: int | None = None
     favorite_affirmations: list[str] | None = None
     favorite_resources: list[str] | None = None
-
-
-class DiaryIn(BaseModel):
-    entry_date: date | None = None
-    mood: str = "neutral"
-    gratitude: str = ""
-    reflection: str = ""
-    intention: str = ""
 
 
 class DiaryOut(BaseModel):

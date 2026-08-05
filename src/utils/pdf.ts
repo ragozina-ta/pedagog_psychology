@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
+import { saveBlob } from './download'
 
 export async function elementToPdf(element: HTMLElement, filename: string) {
   const canvas = await html2canvas(element, {
@@ -17,7 +18,8 @@ export async function elementToPdf(element: HTMLElement, filename: string) {
   const x = (pageWidth - w) / 2
   const y = 8
   pdf.addImage(img, 'PNG', x, y, w, Math.min(h, pageHeight - 16))
-  pdf.save(filename)
+  const blob = pdf.output('blob')
+  return saveBlob(blob, filename)
 }
 
 export function downloadTextPdf(title: string, lines: string[], filename: string) {
@@ -40,17 +42,17 @@ export function downloadTextPdf(title: string, lines: string[], filename: string
     }
     y += 3
   }
-  pdf.save(filename)
+  return saveBlob(pdf.output('blob'), filename)
 }
 
 /** Cyrillic-safe PDF via canvas rendering of HTML block */
 export async function downloadHtmlPdf(html: string, filename: string, width = 794) {
   const host = document.createElement('div')
-  host.style.cssText = `position:fixed;left:-9999px;top:0;width:${width}px;padding:32px;background:#fff;color:#1c2421;font-family:Manrope,Arial,sans-serif;`
+  host.style.cssText = `position:fixed;left:-9999px;top:0;width:${width}px;padding:32px;background:#fff;color:#1c2421;font-family:Nunito,Arial,sans-serif;`
   host.innerHTML = html
   document.body.appendChild(host)
   try {
-    await elementToPdf(host, filename)
+    return await elementToPdf(host, filename)
   } finally {
     document.body.removeChild(host)
   }

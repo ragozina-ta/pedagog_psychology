@@ -127,24 +127,19 @@ export function GardenPage() {
 
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <h2 style={{ color: 'var(--brand)' }}>Ачивки</h2>
-        <div className="chip-row">
-          {achievements.filter((a) => a.earned).map((a) => (
-            <span key={a.id} className="chip active" title={a.description}>
-              {a.title}
-            </span>
+        <div className="achieve-grid">
+          {achievements.map((a) => (
+            <div key={a.id} className={`achieve-card ${a.earned ? '' : 'locked'}`} title={a.description}>
+              <img src={`${import.meta.env.BASE_URL}achievements/${a.id}.svg`} alt="" width={56} height={56} />
+              <div className="title">{a.title}</div>
+            </div>
           ))}
-          {!achievements.some((a) => a.earned) && <p className="muted">Пока нет — начните с дневника или карточки.</p>}
         </div>
-        <details>
-          <summary className="muted">Все возможные ачивки</summary>
-          <ul>
-            {achievements.map((a) => (
-              <li key={a.id} style={{ opacity: a.earned ? 1 : 0.55 }}>
-                {a.earned ? '✓' : '○'} {a.title} — {a.description}
-              </li>
-            ))}
-          </ul>
-        </details>
+        {!achievements.some((a) => a.earned) && (
+          <p className="muted" style={{ marginTop: 8 }}>
+            Пока нет — начните с дневника или карточки.
+          </p>
+        )}
       </div>
 
       <div className="panel">

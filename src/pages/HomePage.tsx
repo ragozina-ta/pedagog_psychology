@@ -3,14 +3,26 @@ import { Link } from 'react-router-dom'
 import { activityApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { InstallAppButton } from '../components/InstallAppButton'
+import { PlayingCard } from '../components/PlayingCard'
 import { affirmationForDate } from '../data/affirmations'
 import { cardForDate } from '../data/cards'
+
+function moodKey() {
+  const d = new Date()
+  return `mood:${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export function HomePage() {
   const { profile, refresh } = useAuth()
   const affirmation = affirmationForDate()
   const card = cardForDate()
-  const [mood, setMood] = useState<string | null>(null)
+  const [mood, setMood] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(moodKey())
+    } catch {
+      return null
+    }
+  })
   const [doneCard, setDoneCard] = useState(false)
   const [msg, setMsg] = useState('')
 
@@ -25,6 +37,11 @@ export function HomePage() {
 
   const onMood = async (m: string) => {
     setMood(m)
+    try {
+      localStorage.setItem(moodKey(), m)
+    } catch {
+      /* */
+    }
     try {
       await activityApi.log('mood_check', { mood: m })
       await refresh()
@@ -80,13 +97,11 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="panel" style={{ marginBottom: '1rem' }}>
-        <div className="eyebrow" style={{ color: 'var(--accent)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-          Карточка дня · {card.category}
-        </div>
-        <h2 style={{ color: 'var(--brand)' }}>{card.title}</h2>
-        <p style={{ color: 'var(--ink)' }}>{card.task}</p>
-        <div className="btn-row">
+      <div className="playing-card-wrap">
+        <PlayingCard eyebrow={`Карточка дня · ${card.category}`} title={card.title} corner="♣">
+          {card.task}
+        </PlayingCard>
+        <div className="btn-row" style={{ marginTop: 0 }}>
           <button type="button" className="btn" disabled={doneCard} onClick={() => void completeCard()}>
             {doneCard ? 'Выполнено' : 'Выполнил'}
           </button>
@@ -97,12 +112,15 @@ export function HomePage() {
         {msg && <p className="muted">{msg}</p>}
       </div>
 
-      <div className="panel" style={{ marginBottom: '1rem' }}>
-        <div style={{ color: 'var(--accent)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Аффирмация дня</div>
-        <h2 style={{ color: 'var(--brand)', fontSize: '1.35rem' }}>{affirmation.text}</h2>
-        <Link className="btn ghost" to="/affirmations">
-          Открыть колоду
-        </Link>
+      <div className="playing-card-wrap">
+        <PlayingCard eyebrow="Аффирмация дня" variant="accent" corner="♥">
+          {affirmation.text}
+        </PlayingCard>
+        <div className="btn-row" style={{ marginTop: 0 }}>
+          <Link className="btn ghost" to="/affirmations">
+            Открыть колоду
+          </Link>
+        </div>
       </div>
 
       <div className="grid-modules">
@@ -110,7 +128,7 @@ export function HomePage() {
           { to: '/wheel', title: 'Колесо баланса', text: '8 сфер · сектора' },
           { to: '/resources', title: 'Ресурсный банк', text: 'Техники и скрипты' },
           { to: '/diary', title: 'Дневник', text: 'Рефлексия без давления' },
-          { to: '/wish-map', title: 'Карта желаний', text: 'Только картинки' },
+          { to: '/wish-map', title: 'Карта желаний', text: 'Цели, мечты и планы на будущее' },
           { to: '/chat', title: 'Выговориться', text: 'Компас и чат школы' },
         ].map((m) => (
           <Link key={m.to} to={m.to} className="module-link">

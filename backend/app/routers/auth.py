@@ -21,8 +21,8 @@ router = APIRouter()
     response_model=TokenOut,
     summary="Регистрация",
     description=(
-        "Создаёт пользователя. Укажите `create_school_name` (роль admin) "
-        "или `school_code` (роль teacher)."
+        "Создаёт пользователя. Без школы — личное пространство. "
+        "Опционально: `create_school_name` (admin) или `school_code` (teacher)."
     ),
     openapi_extra={"security": []},
 )
@@ -30,11 +30,9 @@ async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)):
     exists = (await db.execute(select(User).where(User.email == body.email.lower()))).scalar_one_or_none()
     if exists:
         raise HTTPException(400, "Email уже зарегистрирован")
-    if not body.create_school_name and not body.school_code:
-        raise HTTPException(400, "Укажите код школы или создайте школу")
 
     user = User(
-        email=body.email.lower(),
+        email=body.email.lower().strip(),
         password_hash=hash_password(body.password),
         full_name=body.full_name.strip(),
     )
@@ -42,17 +40,23 @@ async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)):
     await db.flush()
     db.add(Profile(user_id=user.id))
 
-    if body.create_school_name:
+    if body.create_school_name and body.create_school_name.strip():
         school = School(name=body.create_school_name.strip())
         db.add(school)
         await db.flush()
         db.add(Membership(user_id=user.id, school_id=school.id, role="admin"))
-    else:
+    elif body.school_code and body.school_code.strip():
         school = (
             await db.execute(select(School).where(School.invite_code == body.school_code.strip().upper()))
         ).scalar_one_or_none()
         if not school:
             raise HTTPException(404, "Школа с таким кодом не найдена")
+        db.add(Membership(user_id=user.id, school_id=school.id, role="teacher"))
+    else:
+        # Personal space — no school UI at registration
+        school = School(name="Личное пространство")
+        db.add(school)
+        await db.flush()
         db.add(Membership(user_id=user.id, school_id=school.id, role="teacher"))
 
     await db.commit()

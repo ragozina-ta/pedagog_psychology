@@ -89,7 +89,7 @@ class DiaryEntry(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     entry_date: Mapped[date] = mapped_column(Date)
-    mood: Mapped[str] = mapped_column(String(16), default="neutral")  # happy|neutral|sad
+    mood: Mapped[str] = mapped_column(String(16), default="5")  # "0".."10" or legacy happy|neutral|sad
     gratitude: Mapped[str] = mapped_column(Text, default="")
     reflection: Mapped[str] = mapped_column(Text, default="")
     intention: Mapped[str] = mapped_column(Text, default="")

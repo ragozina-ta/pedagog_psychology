@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { format, parseISO } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import { wheelApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { WHEEL_SPHERES } from '../data/wheel'
@@ -25,12 +27,35 @@ const INTRO = `Это колесо — не экзамен, не отчёт и �
 
 Заполнение займёт около 2 минут.`
 
+function defaultValues(): Record<WheelSphereId, number> {
+  return Object.fromEntries(WHEEL_SPHERES.map((s) => [s.id, 5])) as Record<WheelSphereId, number>
+}
+
 export function WheelPage() {
   const { refresh } = useAuth()
   const [step, setStep] = useState<'intro' | 'fill' | 'result'>('intro')
-  const [values, setValues] = useState<Record<WheelSphereId, number>>(() =>
-    Object.fromEntries(WHEEL_SPHERES.map((s) => [s.id, 5])) as Record<WheelSphereId, number>,
-  )
+  const [values, setValues] = useState<Record<WheelSphereId, number>>(defaultValues)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [lastSaved, setLastSaved] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const hist = await wheelApi.history()
+        const last = hist[0]
+        if (!last?.values) return
+        const next = defaultValues()
+        for (const s of WHEEL_SPHERES) {
+          const v = last.values[s.id]
+          if (typeof v === 'number') next[s.id] = Math.max(0, Math.min(10, v))
+        }
+        setValues(next)
+        setLastSaved(last.created_at)
+      } catch {
+        /* */
+      }
+    })()
+  }, [])
 
   const size = 320
   const cx = size / 2
@@ -87,13 +112,17 @@ export function WheelPage() {
   )
 
   const finish = async () => {
+    setSaveMsg('Сохраняем…')
     try {
       await wheelApi.save(values)
       await refresh()
-    } catch {
-      /* */
+      const now = new Date().toISOString()
+      setLastSaved(now)
+      setSaveMsg('Слепок сохранён')
+      setStep('result')
+    } catch (e) {
+      setSaveMsg(e instanceof Error ? e.message : 'Не удалось сохранить')
     }
-    setStep('result')
   }
 
   if (step === 'intro') {
@@ -110,6 +139,12 @@ export function WheelPage() {
           <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: 'var(--ink-muted)', margin: 0 }}>
             {INTRO}
           </pre>
+          {lastSaved && (
+            <p className="muted" style={{ marginTop: 12 }}>
+              Последний слепок:{' '}
+              {format(parseISO(lastSaved), 'd MMMM yyyy, HH:mm', { locale: ru })}
+            </p>
+          )}
           <div className="btn-row">
             <button type="button" className="btn" onClick={() => setStep('fill')}>
               Начать заполнение
@@ -128,6 +163,11 @@ export function WheelPage() {
       </section>
 
       <div className="panel" style={{ textAlign: 'center' }}>
+        {lastSaved && (
+          <p className="muted" style={{ marginTop: 0 }}>
+            Сохранено: {format(parseISO(lastSaved), 'd MMMM yyyy, HH:mm', { locale: ru })}
+          </p>
+        )}
         <svg className="sector-wheel" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Колесо баланса">
           {sectors.map((sec) =>
             sec.rings.map((ring) => (
@@ -172,6 +212,7 @@ export function WheelPage() {
             </button>
           </div>
         )}
+        {saveMsg && <p className="muted">{saveMsg}</p>}
       </div>
 
       {step === 'result' && (

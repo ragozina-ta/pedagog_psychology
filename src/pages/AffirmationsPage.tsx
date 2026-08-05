@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { activityApi, profileApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { PlayingCard } from '../components/PlayingCard'
 import {
   AFFIRMATION_LABELS,
   AFFIRMATIONS,
@@ -8,11 +9,13 @@ import {
   randomAffirmation,
   type Affirmation,
 } from '../data/affirmations'
+import { dataUrlToBlob, saveBlob } from '../utils/download'
 import { downloadHtmlPdf } from '../utils/pdf'
 
 export function AffirmationsPage() {
   const { profile, refresh } = useAuth()
   const [card, setCard] = useState<Affirmation>(() => affirmationForDate())
+  const [status, setStatus] = useState('')
   const favorites = profile?.favorite_affirmations ?? []
 
   const favCards = useMemo(
@@ -20,7 +23,8 @@ export function AffirmationsPage() {
     [favorites],
   )
 
-  const downloadPng = () => {
+  const downloadPng = async () => {
+    setStatus('Готовим заставку…')
     const canvas = document.createElement('canvas')
     canvas.width = 1080
     canvas.height = 1920
@@ -37,10 +41,10 @@ export function AffirmationsPage() {
     ctx.arc(900, 240, 200, 0, Math.PI * 2)
     ctx.fill()
     ctx.fillStyle = '#ecd09c'
-    ctx.font = '28px Manrope, sans-serif'
+    ctx.font = '28px Nunito, sans-serif'
     ctx.fillText('РЕСУРС', 90, 200)
     ctx.fillStyle = '#f7f1e6'
-    ctx.font = '600 52px "Source Serif 4", Georgia, serif'
+    ctx.font = '600 52px Literata, Georgia, serif'
     const words = card.text.split(' ')
     let line = ''
     let y = 780
@@ -53,13 +57,16 @@ export function AffirmationsPage() {
       } else line = test
     }
     if (line) ctx.fillText(line, 90, y)
-    ctx.font = '26px Manrope, sans-serif'
+    ctx.font = '26px Nunito, sans-serif'
     ctx.fillStyle = '#ecd09c'
     ctx.fillText(AFFIRMATION_LABELS[card.category], 90, y + 90)
-    const a = document.createElement('a')
-    a.href = canvas.toDataURL('image/png')
-    a.download = `affirmaciya-${card.id}.png`
-    a.click()
+    const blob = await dataUrlToBlob(canvas.toDataURL('image/png'))
+    const res = await saveBlob(blob, `affirmaciya-${card.id}.png`)
+    if (res.ok) {
+      setStatus(res.method === 'share' ? 'Откройте «Сохранить изображение» в меню Share' : 'Заставка сохранена')
+    } else {
+      setStatus(res.error)
+    }
   }
 
   const drawNew = async () => {
@@ -81,6 +88,7 @@ export function AffirmationsPage() {
   }
 
   const downloadDeck = async () => {
+    setStatus('Готовим PDF…')
     const items = AFFIRMATIONS.map(
       (a, i) =>
         `<div style="break-inside:avoid;border:1px solid #ddd;padding:12px;margin-bottom:8px;border-radius:12px">
@@ -88,10 +96,11 @@ export function AffirmationsPage() {
           <div>${a.text}</div>
         </div>`,
     ).join('')
-    await downloadHtmlPdf(
-      `<div style="font-family:Manrope,Arial;color:#31464f"><h1 style="color:#703a14">Колода аффирмаций</h1>${items}</div>`,
+    const res = await downloadHtmlPdf(
+      `<div style="font-family:Nunito,Arial;color:#31464f"><h1 style="color:#703a14;font-family:Literata,serif">Колода аффирмаций</h1>${items}</div>`,
       'koloda-affirmaciy.pdf',
     )
+    setStatus(res.ok ? 'PDF готов' : res.error)
   }
 
   return (
@@ -101,18 +110,17 @@ export function AffirmationsPage() {
         <p>Колода из 120 карт. Вытяните карту, сохраните заставку, добавьте в избранное.</p>
       </section>
 
-      <div className="card-deck">
-        <div style={{ letterSpacing: '0.1em', fontSize: '0.75rem', textTransform: 'uppercase', color: '#ecd09c' }}>
-          {AFFIRMATION_LABELS[card.category]}
-        </div>
-        <h2 style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2rem)', color: '#f7f1e6', margin: 0 }}>{card.text}</h2>
+      <div className="playing-card-wrap">
+        <PlayingCard eyebrow={AFFIRMATION_LABELS[card.category]} variant="accent" corner="♥">
+          {card.text}
+        </PlayingCard>
       </div>
 
       <div className="btn-row">
         <button type="button" className="btn" onClick={() => void drawNew()}>
           Вытянуть новую
         </button>
-        <button type="button" className="btn secondary" onClick={downloadPng}>
+        <button type="button" className="btn secondary" onClick={() => void downloadPng()}>
           Скачать заставку
         </button>
         <button type="button" className="btn ghost" onClick={() => void toggleFav()}>
@@ -122,6 +130,7 @@ export function AffirmationsPage() {
           PDF колоды
         </button>
       </div>
+      {status && <p className="muted">{status}</p>}
 
       <h2 style={{ color: 'var(--brand)', marginTop: '1.5rem' }}>Мои любимые</h2>
       <div className="grid-modules">

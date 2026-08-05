@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { activityApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { PlayingCard } from '../components/PlayingCard'
 import { DAILY_CARDS, cardForDate } from '../data/cards'
 import { downloadHtmlPdf } from '../utils/pdf'
 
@@ -30,15 +31,21 @@ export function CardsPage() {
         <h1>Ресурсные карточки</h1>
         <p>Колода из {DAILY_CARDS.length} микрозаданий. Цифровой формат и PDF для печати.</p>
       </section>
-      <div className="card-deck">
-        <div style={{ color: '#ecd09c', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          {card.category} · {index + 1}/{DAILY_CARDS.length}
-        </div>
-        <h2 style={{ color: '#f7f1e6', fontSize: '2rem', margin: 0 }}>{card.title}</h2>
-        <p style={{ color: '#f7f1e6', fontSize: '1.1rem', margin: 0 }}>{card.task}</p>
+      <div className="playing-card-wrap">
+        <PlayingCard
+          eyebrow={`${card.category} · ${index + 1}/${DAILY_CARDS.length}`}
+          title={card.title}
+          corner="♣"
+        >
+          {card.task}
+        </PlayingCard>
       </div>
       <div className="btn-row">
-        <button type="button" className="btn secondary" onClick={() => setIndex((i) => (i - 1 + DAILY_CARDS.length) % DAILY_CARDS.length)}>
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => setIndex((i) => (i - 1 + DAILY_CARDS.length) % DAILY_CARDS.length)}
+        >
           Назад
         </button>
         <button type="button" className="btn" onClick={() => setIndex((i) => (i + 1) % DAILY_CARDS.length)}>
@@ -52,9 +59,9 @@ export function CardsPage() {
           className="btn ghost"
           onClick={() =>
             void downloadHtmlPdf(
-              `<div style="font-family:Manrope;color:#31464f"><h1 style="color:#703a14">${card.title}</h1><p>${card.category}</p><p>${card.task}</p><p>${format(new Date(), 'd MMMM yyyy', { locale: ru })}</p></div>`,
+              `<div style="font-family:Nunito;color:#31464f"><h1 style="color:#703a14;font-family:Literata,serif">${card.title}</h1><p>${card.category}</p><p>${card.task}</p><p>${format(new Date(), 'd MMMM yyyy', { locale: ru })}</p></div>`,
               `kartochka-${card.id}.pdf`,
-            )
+            ).then((r) => setMsg(r.ok ? 'PDF готов' : r.error))
           }
         >
           PDF карточки
@@ -64,9 +71,9 @@ export function CardsPage() {
           className="btn ghost"
           onClick={() =>
             void downloadHtmlPdf(
-              `<div style="font-family:Manrope;color:#31464f"><h1 style="color:#703a14">Колода карточек</h1>${DAILY_CARDS.map((c, i) => `<div style="border:1px solid #ddd;padding:10px;margin:8px 0;border-radius:10px"><b>${i + 1}. ${c.title}</b> (${c.category})<div>${c.task}</div></div>`).join('')}</div>`,
+              `<div style="font-family:Nunito;color:#31464f"><h1 style="color:#703a14">Колода карточек</h1>${DAILY_CARDS.map((c, i) => `<div style="border:1px solid #ddd;padding:10px;margin:8px 0;border-radius:10px"><b>${i + 1}. ${c.title}</b> (${c.category})<div>${c.task}</div></div>`).join('')}</div>`,
               'koloda-kartochek.pdf',
-            )
+            ).then((r) => setMsg(r.ok ? 'PDF готов' : r.error))
           }
         >
           PDF колоды

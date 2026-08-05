@@ -132,7 +132,7 @@ export function ChatPage() {
               Тревога
             </button>
             <a className="btn secondary" href="tel:+74959895050">
-              Позвонить +7 (495) 989-50-50
+              Позвонить в службу психологической помощи
             </a>
           </div>
           <form
