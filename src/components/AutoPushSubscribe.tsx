@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { ensurePushSubscription } from '../utils/push'
+import { ensurePushSubscription, isIosDevice, isStandalonePwa } from '../utils/push'
 
 /**
- * После входа автоматически запрашивает разрешение и подписывает на push.
+ * После входа подписывает на push.
+ * На iPhone — только если открыто как PWA с «Домой»; иначе показывает инструкцию.
  */
 export function AutoPushSubscribe() {
   const { profile } = useAuth()
@@ -15,6 +16,14 @@ export function AutoPushSubscribe() {
     let cancelled = false
     void (async () => {
       try {
+        if (isIosDevice() && !isStandalonePwa()) {
+          if (!cancelled) {
+            setHint(
+              'На iPhone уведомления доступны только из приложения на экране «Домой». Установите через Safari → Поделиться → На экран «Домой».',
+            )
+          }
+          return
+        }
         const res = await ensurePushSubscription()
         if (cancelled) return
         if (res.ok) setHint(null)
@@ -32,8 +41,8 @@ export function AutoPushSubscribe() {
 
   return (
     <div className="hint" style={{ margin: '0 0 1rem' }}>
-      Уведомления: {hint}. Разрешите их во всплывающем окне браузера или зайдите в{' '}
-      <Link to="/settings">Настройки</Link> и нажмите «Подключить уведомления».
+      Уведомления: {hint}{' '}
+      <Link to="/settings">Настройки</Link>
     </div>
   )
 }

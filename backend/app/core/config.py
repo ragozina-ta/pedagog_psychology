@@ -32,9 +32,11 @@ class Settings(BaseSettings):
         if not v:
             return ""
         s = str(v).strip().strip('"').strip("'")
+        # Keep PEM file paths as paths — pywebpush uses Vapid.from_file().
+        # Only normalize inline PEM / raw keys.
         path = Path(s)
         if s.endswith(".pem") or (s.startswith("/") and path.is_file()):
-            return path.read_text(encoding="utf-8")
+            return str(path)
         return s.replace("\\n", "\n")
 
     @property

@@ -9,12 +9,26 @@ import random
 from datetime import date, datetime, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from py_vapid import Vapid
 from pywebpush import WebPushException, webpush
 from sqlalchemy import select
 
 from app.core.config import settings
 from app.db.models import Friendship, Profile, PushSubscription, User
 from app.db.session import SessionLocal, init_db
+
+
+def resolve_vapid_private():
+    """pywebpush accepts a file path, Vapid instance, or raw key — not PEM text."""
+    key = (settings.vapid_private_key or "").strip()
+    if not key:
+        return None
+    if key.startswith("-----BEGIN"):
+        return Vapid.from_pem(key.encode("utf-8"))
+    if os.path.isfile(key):
+        return key
+    return key
+
 
 AFFIRMATIONS_SAMPLE = [
     "Я — профессионал, и каждый урок подтверждает мою компетентность.",
@@ -29,22 +43,28 @@ PUSH_TEST_INTERVAL_SEC = int(os.getenv("PUSH_TEST_INTERVAL_SEC", "30"))
 
 
 async def send_push(sub: PushSubscription, title: str, body: str, url: str):
-    if not settings.vapid_private_key:
+    vapid_key = resolve_vapid_private()
+    if not vapid_key:
         print("skip push: VAPID_PRIVATE_KEY empty")
         return
     try:
+        # Copy claims — pywebpush mutates the dict (aud/exp)
+        claims = {"sub": settings.vapid_mailto}
         webpush(
             subscription_info={
                 "endpoint": sub.endpoint,
                 "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
             },
             data=json.dumps({"title": title, "body": body, "url": url}, ensure_ascii=False),
-            vapid_private_key=settings.vapid_private_key,
-            vapid_claims={"sub": settings.vapid_mailto},
+            vapid_private_key=vapid_key,
+            vapid_claims=claims,
+            ttl=60,
         )
         print("push sent", sub.user_id, title)
     except WebPushException as e:
         print("push error", e)
+    except Exception as e:
+        print("push error", type(e).__name__, e)
 
 
 async def morning_affirmations():

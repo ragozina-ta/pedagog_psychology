@@ -53,10 +53,11 @@ export function InstallAppButton({ className = 'btn', label = 'Скачать п
             <h2>Как установить «Ресурс»</h2>
             {ios ? (
               <ol>
-                <li>Откройте сайт в <strong>Safari</strong></li>
+                <li>Откройте сайт в <strong>Safari</strong> (не Chrome)</li>
                 <li>Нажмите кнопку <strong>Поделиться</strong></li>
                 <li>Выберите <strong>На экран «Домой»</strong></li>
                 <li>Подтвердите <strong>Добавить</strong></li>
+                <li>Откройте иконку с домашнего экрана и в Настройках нажмите <strong>Подключить уведомления</strong></li>
               </ol>
             ) : (
               <ol>
@@ -65,7 +66,9 @@ export function InstallAppButton({ className = 'btn', label = 'Скачать п
                 <li>Или нажмите иконку установки в адресной строке</li>
               </ol>
             )}
-            <p className="muted">Нужен HTTPS (GitHub Pages) или localhost. После установки приложение откроется без вкладок браузера.</p>
+            <p className="muted">
+              На iPhone пуши не работают во вкладке Safari — только из приложения на «Домой» (нужен iOS 16.4+).
+            </p>
             <div className="btn-row">
               <button type="button" className="btn" onClick={() => setShowIosHelp(false)}>
                 Понятно
