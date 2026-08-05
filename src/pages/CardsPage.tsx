@@ -5,7 +5,8 @@ import { activityApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { PlayingCard } from '../components/PlayingCard'
 import { DAILY_CARDS, cardForDate } from '../data/cards'
-import { dailyCardsDeckHtml, singleDailyCardHtml } from '../utils/playingCardHtml'
+import { saveBlob } from '../utils/download'
+import { singleDailyCardHtml } from '../utils/playingCardHtml'
 import { downloadHtmlPdf } from '../utils/pdf'
 
 export function CardsPage() {
@@ -77,11 +78,18 @@ export function CardsPage() {
           type="button"
           className="btn ghost"
           onClick={() =>
-            void downloadHtmlPdf(
-              dailyCardsDeckHtml(DAILY_CARDS.map((c) => ({ category: c.category, title: c.title, task: c.task }))),
-              'koloda-kartochek.pdf',
-              900,
-            ).then((r) => setMsg(r.ok ? 'PDF готов' : r.error))
+            void (async () => {
+              setMsg('Скачиваем PDF колоды…')
+              try {
+                const res = await fetch(`${import.meta.env.BASE_URL}decks/koloda-kartochek.pdf`)
+                if (!res.ok) throw new Error('Файл колоды не найден')
+                const blob = await res.blob()
+                const saved = await saveBlob(blob, 'koloda-kartochek.pdf')
+                setMsg(saved.ok ? 'PDF колоды скачан' : saved.error)
+              } catch (e) {
+                setMsg(e instanceof Error ? e.message : 'Не удалось скачать')
+              }
+            })()
           }
         >
           PDF колоды

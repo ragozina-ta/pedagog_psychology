@@ -10,7 +10,7 @@ import {
   type Affirmation,
 } from '../data/affirmations'
 import { dataUrlToBlob, saveBlob } from '../utils/download'
-import { affirmationCardsDeckHtml, singleAffirmationCardHtml } from '../utils/playingCardHtml'
+import { singleAffirmationCardHtml } from '../utils/playingCardHtml'
 import { downloadHtmlPdf } from '../utils/pdf'
 
 export function AffirmationsPage() {
@@ -89,12 +89,16 @@ export function AffirmationsPage() {
   }
 
   const downloadDeck = async () => {
-    setStatus('Готовим PDF колоды…')
-    const html = affirmationCardsDeckHtml(
-      AFFIRMATIONS.map((a) => ({ categoryLabel: AFFIRMATION_LABELS[a.category], text: a.text })),
-    )
-    const res = await downloadHtmlPdf(html, 'koloda-affirmaciy.pdf', 900)
-    setStatus(res.ok ? 'PDF готов' : res.error)
+    setStatus('Скачиваем PDF колоды…')
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}decks/koloda-affirmaciy.pdf`)
+      if (!res.ok) throw new Error('Файл колоды не найден')
+      const blob = await res.blob()
+      const saved = await saveBlob(blob, 'koloda-affirmaciy.pdf')
+      setStatus(saved.ok ? 'PDF колоды скачан' : saved.error)
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : 'Не удалось скачать')
+    }
   }
 
   const downloadOnePdf = async () => {
