@@ -9,8 +9,12 @@ function ChatNavIcon() {
   return (
     <svg className="ico ico-svg" viewBox="0 0 24 24" aria-hidden focusable="false">
       <path
-        fill="currentColor"
-        d="M4.5 3.75h15a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25H9.6l-3.72 3.1a.75.75 0 0 1-1.23-.57V17.25H4.5A2.25 2.25 0 0 1 2.25 15V6A2.25 2.25 0 0 1 4.5 3.75Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H9.2L5.5 19.5V15.5H5A1.5 1.5 0 0 1 3.5 14V7A1.5 1.5 0 0 1 5 5.5Z"
       />
     </svg>
   )
