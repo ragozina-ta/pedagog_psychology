@@ -10,6 +10,7 @@ import {
   type Affirmation,
 } from '../data/affirmations'
 import { dataUrlToBlob, saveBlob } from '../utils/download'
+import { affirmationCardsDeckHtml, singleAffirmationCardHtml } from '../utils/playingCardHtml'
 import { downloadHtmlPdf } from '../utils/pdf'
 
 export function AffirmationsPage() {
@@ -88,17 +89,20 @@ export function AffirmationsPage() {
   }
 
   const downloadDeck = async () => {
+    setStatus('Готовим PDF колоды…')
+    const html = affirmationCardsDeckHtml(
+      AFFIRMATIONS.map((a) => ({ categoryLabel: AFFIRMATION_LABELS[a.category], text: a.text })),
+    )
+    const res = await downloadHtmlPdf(html, 'koloda-affirmaciy.pdf', 900)
+    setStatus(res.ok ? 'PDF готов' : res.error)
+  }
+
+  const downloadOnePdf = async () => {
     setStatus('Готовим PDF…')
-    const items = AFFIRMATIONS.map(
-      (a, i) =>
-        `<div style="break-inside:avoid;border:1px solid #ddd;padding:12px;margin-bottom:8px;border-radius:12px">
-          <div style="color:#c18636;font-size:11px">${i + 1}. ${AFFIRMATION_LABELS[a.category]}</div>
-          <div>${a.text}</div>
-        </div>`,
-    ).join('')
     const res = await downloadHtmlPdf(
-      `<div style="font-family:Nunito,Arial;color:#31464f"><h1 style="color:#703a14;font-family:Literata,serif">Колода аффирмаций</h1>${items}</div>`,
-      'koloda-affirmaciy.pdf',
+      singleAffirmationCardHtml({ categoryLabel: AFFIRMATION_LABELS[card.category], text: card.text }),
+      `affirmaciya-${card.id}.pdf`,
+      420,
     )
     setStatus(res.ok ? 'PDF готов' : res.error)
   }
@@ -122,6 +126,9 @@ export function AffirmationsPage() {
         </button>
         <button type="button" className="btn secondary" onClick={() => void downloadPng()}>
           Скачать заставку
+        </button>
+        <button type="button" className="btn ghost" onClick={() => void downloadOnePdf()}>
+          PDF карты
         </button>
         <button type="button" className="btn ghost" onClick={() => void toggleFav()}>
           {favorites.includes(card.id) ? 'В избранном' : 'В избранное'}

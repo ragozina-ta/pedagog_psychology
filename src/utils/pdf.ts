@@ -8,16 +8,26 @@ export async function elementToPdf(element: HTMLElement, filename: string) {
     useCORS: true,
     backgroundColor: '#ffffff',
   })
-  const img = canvas.toDataURL('image/png')
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageWidth = pdf.internal.pageSize.getWidth()
   const pageHeight = pdf.internal.pageSize.getHeight()
-  const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height)
-  const w = canvas.width * ratio
-  const h = canvas.height * ratio
-  const x = (pageWidth - w) / 2
-  const y = 8
-  pdf.addImage(img, 'PNG', x, y, w, Math.min(h, pageHeight - 16))
+  const margin = 8
+  const imgWidth = pageWidth - margin * 2
+  const imgHeight = (canvas.height * imgWidth) / canvas.width
+  let heightLeft = imgHeight
+  let position = margin
+
+  const img = canvas.toDataURL('image/png')
+  pdf.addImage(img, 'PNG', margin, position, imgWidth, imgHeight)
+  heightLeft -= pageHeight - margin * 2
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight + margin
+    pdf.addPage()
+    pdf.addImage(img, 'PNG', margin, position, imgWidth, imgHeight)
+    heightLeft -= pageHeight - margin * 2
+  }
+
   const blob = pdf.output('blob')
   return saveBlob(blob, filename)
 }

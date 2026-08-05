@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { activityApi, profileApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { RESOURCES, RESOURCE_CATEGORIES } from '../data/resources'
@@ -6,10 +7,20 @@ import type { ResourceItem } from '../data/resources'
 
 export function ResourcesPage() {
   const { profile, refresh } = useAuth()
+  const [searchParams] = useSearchParams()
   const [category, setCategory] = useState<ResourceItem['category'] | 'all'>('all')
   const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const favs = profile?.favorite_resources ?? []
+
+  useEffect(() => {
+    const open = searchParams.get('open')
+    if (!open) return
+    const item = RESOURCES.find((r) => r.id === open)
+    if (!item) return
+    setCategory('all')
+    setOpenId(item.id)
+  }, [searchParams])
 
   const list = useMemo(() => {
     let rows = category === 'all' ? RESOURCES : RESOURCES.filter((r) => r.category === category)

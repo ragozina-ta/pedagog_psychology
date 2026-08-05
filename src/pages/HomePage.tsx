@@ -98,7 +98,7 @@ export function HomePage() {
       </div>
 
       <div className="playing-card-wrap">
-        <PlayingCard eyebrow={`Карточка дня · ${card.category}`} title={card.title} corner="♣">
+        <PlayingCard eyebrow={`Карточка дня · ${card.category}`} title={card.title} corner="♥">
           {card.task}
         </PlayingCard>
         <div className="btn-row" style={{ marginTop: 0 }}>

@@ -1,9 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { chatApi, compassApi } from '../api/client'
+import { chatApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { COMPASS_ALARM, nextCompassReply, type CompassSuggestion } from '../data/compassReplies'
 
-type Msg = { id?: number; sender_name?: string | null; content: string; role?: string }
+type Msg = {
+  id?: number
+  sender_name?: string | null
+  content: string
+  role?: string
+  resources?: CompassSuggestion[]
+}
 
 export function ChatPage() {
   const { profile } = useAuth()
@@ -14,7 +21,7 @@ export function ChatPage() {
   const [botMsgs, setBotMsgs] = useState<Msg[]>([
     {
       content:
-        'Я «Психологический компас». Можно выговориться анонимно. При острой нужде — кнопка «Тревога» и линия +7 (495) 989-50-50.',
+        'Я «Психологический компас». Можно выговориться. При острой нужде — кнопка «Тревога» и звонок в службу помощи. Ниже я буду предлагать техники из ресурсного банка — их можно открыть в один клик.',
       role: 'assistant',
     },
   ])
@@ -50,16 +57,16 @@ export function ChatPage() {
     setBotMsgs((m) => [...m, { content, role: 'user' }])
     setBusy(true)
     try {
-      const r = await compassApi.chat(content, urgent)
-      setBotMsgs((m) => [...m, { content: r.reply, role: 'assistant' }])
-    } catch {
-      setBotMsgs((m) => [
-        ...m,
-        {
-          content: 'Сейчас связь с сервером недоступна. Горячая линия: +7 (495) 989-50-50. Экстренно: 112.',
-          role: 'assistant',
-        },
-      ])
+      await new Promise((r) => setTimeout(r, 280))
+      if (urgent) {
+        setBotMsgs((m) => [...m, { content: COMPASS_ALARM, role: 'assistant' }])
+      } else {
+        const reply = nextCompassReply()
+        setBotMsgs((m) => [
+          ...m,
+          { content: reply.text, role: 'assistant', resources: reply.resources },
+        ])
+      }
     } finally {
       setBusy(false)
     }
@@ -124,6 +131,18 @@ export function ChatPage() {
                 }}
               >
                 {m.content}
+                {m.resources && m.resources.length > 0 && (
+                  <div className="chip-row" style={{ marginTop: 10, marginBottom: 0 }}>
+                    <span className="muted" style={{ width: '100%', fontSize: '0.8rem' }}>
+                      Попробуйте из ресурсного банка:
+                    </span>
+                    {m.resources.map((r) => (
+                      <Link key={r.id} className="chip active" to={`/resources?open=${encodeURIComponent(r.id)}`}>
+                        {r.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -188,10 +207,6 @@ export function ChatPage() {
               </div>
             ))}
           </div>
-          <p className="muted" style={{ marginTop: 12 }}>
-            Личные сообщения: откройте профиль друга в саду или используйте API to_user_id. Бот:{' '}
-            <Link to="/chat">Выговориться</Link>.
-          </p>
         </div>
       )}
     </div>

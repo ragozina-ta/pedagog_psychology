@@ -5,6 +5,7 @@ import { activityApi } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { PlayingCard } from '../components/PlayingCard'
 import { DAILY_CARDS, cardForDate } from '../data/cards'
+import { dailyCardsDeckHtml, singleDailyCardHtml } from '../utils/playingCardHtml'
 import { downloadHtmlPdf } from '../utils/pdf'
 
 export function CardsPage() {
@@ -35,7 +36,7 @@ export function CardsPage() {
         <PlayingCard
           eyebrow={`${card.category} · ${index + 1}/${DAILY_CARDS.length}`}
           title={card.title}
-          corner="♣"
+          corner="♥"
         >
           {card.task}
         </PlayingCard>
@@ -59,8 +60,14 @@ export function CardsPage() {
           className="btn ghost"
           onClick={() =>
             void downloadHtmlPdf(
-              `<div style="font-family:Nunito;color:#31464f"><h1 style="color:#703a14;font-family:Literata,serif">${card.title}</h1><p>${card.category}</p><p>${card.task}</p><p>${format(new Date(), 'd MMMM yyyy', { locale: ru })}</p></div>`,
+              singleDailyCardHtml({
+                category: card.category,
+                title: card.title,
+                task: card.task,
+                dateLabel: format(new Date(), 'd MMMM yyyy', { locale: ru }),
+              }),
               `kartochka-${card.id}.pdf`,
+              420,
             ).then((r) => setMsg(r.ok ? 'PDF готов' : r.error))
           }
         >
@@ -71,8 +78,9 @@ export function CardsPage() {
           className="btn ghost"
           onClick={() =>
             void downloadHtmlPdf(
-              `<div style="font-family:Nunito;color:#31464f"><h1 style="color:#703a14">Колода карточек</h1>${DAILY_CARDS.map((c, i) => `<div style="border:1px solid #ddd;padding:10px;margin:8px 0;border-radius:10px"><b>${i + 1}. ${c.title}</b> (${c.category})<div>${c.task}</div></div>`).join('')}</div>`,
+              dailyCardsDeckHtml(DAILY_CARDS.map((c) => ({ category: c.category, title: c.title, task: c.task }))),
               'koloda-kartochek.pdf',
+              900,
             ).then((r) => setMsg(r.ok ? 'PDF готов' : r.error))
           }
         >

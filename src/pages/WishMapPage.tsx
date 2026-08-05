@@ -70,6 +70,8 @@ export function WishMapPage() {
   })
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [cropMode, setCropMode] = useState<'photo' | 'sector'>('photo')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewId, setPreviewId] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const boardRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -254,8 +256,11 @@ export function WishMapPage() {
                     <button
                       key={img.id}
                       type="button"
-                      title="Удалить"
-                      onClick={() => removeWishImage(img.id)}
+                      title="Увеличить"
+                      onClick={() => {
+                        setPreviewUrl(img.dataUrl)
+                        setPreviewId(img.id)
+                      }}
                       style={{ padding: 0, border: 'none', borderRadius: 8, overflow: 'hidden', background: 'transparent' }}
                     >
                       <img src={img.dataUrl} alt="" className="wish-thumb" />
@@ -285,8 +290,53 @@ export function WishMapPage() {
         </div>
       </div>
       <p className="muted" style={{ marginTop: '0.75rem' }}>
-        Нажмите на картинку на карте, чтобы удалить её.
+        Нажмите на картинку на карте, чтобы увеличить. Удаление — из просмотра.
       </p>
+
+      {previewUrl && (
+        <div
+          className="install-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => {
+            setPreviewUrl(null)
+            setPreviewId(null)
+          }}
+        >
+          <div className="crop-modal" style={{ maxWidth: 'min(92vw, 520px)' }} onClick={(e) => e.stopPropagation()}>
+            <img
+              src={previewUrl}
+              alt=""
+              style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 12, background: '#1a1a1a' }}
+            />
+            <div className="btn-row">
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  setPreviewUrl(null)
+                  setPreviewId(null)
+                }}
+              >
+                Закрыть
+              </button>
+              {previewId && (
+                <button
+                  type="button"
+                  className="btn danger"
+                  onClick={() => {
+                    removeWishImage(previewId)
+                    setPreviewUrl(null)
+                    setPreviewId(null)
+                  }}
+                >
+                  Удалить с карты
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {cropSrc && (
         <ImageCropModal
