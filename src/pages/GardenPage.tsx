@@ -101,6 +101,9 @@ export function GardenPage() {
           <button type="button" className="btn secondary" onClick={() => void createInvite()}>
             Пригласить друга
           </button>
+          <Link className="btn ghost" to="/settings">
+            Настройки
+          </Link>
           {profile?.role === 'admin' && (
             <Link className="btn ghost" to="/admin">
               Панель администратора

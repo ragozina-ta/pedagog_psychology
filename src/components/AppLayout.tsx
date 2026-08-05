@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { AutoPushSubscribe } from './AutoPushSubscribe'
 import { InstallAppButton } from './InstallAppButton'
 import { useAuth } from '../auth/AuthContext'
 
@@ -19,6 +20,7 @@ const desktop = [
   { to: '/cards', label: 'Карточки' },
   { to: '/resources', label: 'Банк' },
   { to: '/wish-map', label: 'Желания' },
+  { to: '/settings', label: 'Настройки' },
 ]
 
 export function AppLayout() {
@@ -37,6 +39,9 @@ export function AppLayout() {
           </div>
         </NavLink>
         <div className="topbar-actions">
+          <NavLink to="/settings" className="btn ghost install-btn">
+            Настройки
+          </NavLink>
           <InstallAppButton className="btn install-btn" label="Скачать" />
           {profile && (
             <button type="button" className="btn ghost install-btn" onClick={logout}>
@@ -58,6 +63,7 @@ export function AppLayout() {
         </div>
       </header>
       <main className="main">
+        <AutoPushSubscribe />
         <Outlet />
       </main>
       <nav className="bottom-nav">
