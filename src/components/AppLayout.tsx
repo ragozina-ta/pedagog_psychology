@@ -1,13 +1,26 @@
+import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AutoPushSubscribe } from './AutoPushSubscribe'
 import { InstallAppButton } from './InstallAppButton'
 import { useAuth } from '../auth/AuthContext'
 
-const bottom = [
+/** Монохромная иконка чата (эмодзи ✉/💬 на телефонах рисуются белыми/цветными). */
+function ChatNavIcon() {
+  return (
+    <svg className="ico ico-svg" viewBox="0 0 24 24" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M4.5 3.75h15a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25H9.6l-3.72 3.1a.75.75 0 0 1-1.23-.57V17.25H4.5A2.25 2.25 0 0 1 2.25 15V6A2.25 2.25 0 0 1 4.5 3.75Z"
+      />
+    </svg>
+  )
+}
+
+const bottom: { to: string; label: string; ico: ReactNode; end?: boolean }[] = [
   { to: '/', label: 'Главная', ico: '⌂', end: true },
   { to: '/garden', label: 'Мой сад', ico: '❀' },
   { to: '/diary', label: 'Дневник', ico: '✎' },
-  { to: '/chat', label: 'Чат', ico: '✉' },
+  { to: '/chat', label: 'Чат', ico: <ChatNavIcon /> },
 ]
 
 const desktop = [
@@ -69,7 +82,7 @@ export function AppLayout() {
       <nav className="bottom-nav">
         {bottom.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
-            <span className="ico">{l.ico}</span>
+            {typeof l.ico === 'string' ? <span className="ico">{l.ico}</span> : l.ico}
             {l.label}
           </NavLink>
         ))}

@@ -185,6 +185,13 @@ p {
 
 .bottom-nav .ico {
   font-size: 1.15rem;
+  line-height: 1;
+}
+
+.bottom-nav .ico-svg {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .page-hero {
