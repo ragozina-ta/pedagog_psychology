@@ -790,18 +790,59 @@ a.btn {
   position: fixed;
   inset: 0;
   background: rgba(49, 70, 79, 0.45);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   z-index: 100;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .install-modal {
   width: min(420px, 100%);
+  max-height: min(90dvh, 100%);
+  display: flex;
+  flex-direction: column;
   background: var(--bg-elevated);
   border-radius: var(--radius);
-  padding: 1.25rem;
   box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.install-modal__body {
+  padding: 1.25rem 1.25rem 0.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1;
+  min-height: 0;
+}
+
+.install-modal__body h2 {
+  margin-top: 0;
+}
+
+.install-modal__body ol {
+  padding-left: 1.25rem;
+  margin: 0.75rem 0;
+}
+
+.install-modal__body li {
+  margin-bottom: 0.55rem;
+  line-height: 1.4;
+}
+
+.install-modal__footer {
+  flex-shrink: 0;
+  padding: 0.85rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--bg-elevated);
+}
+
+.install-modal__footer .btn {
+  width: 100%;
 }
 
 .auth-card {
