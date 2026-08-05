@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 
 interface InstallAppButtonProps {
@@ -31,6 +32,56 @@ export function InstallAppButton({ className = 'btn', label = 'Скачать п
   const btnClass =
     !canShow && !className.includes('landing-download') ? `${className} secondary` : className
 
+  const helpModal =
+    showIosHelp &&
+    createPortal(
+      <div className="install-modal-backdrop" role="dialog" aria-modal="true" onClick={() => setShowIosHelp(false)}>
+        <div className="install-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="install-modal__body">
+            <h2>Как установить «Ресурс»</h2>
+            {ios ? (
+              <ol>
+                <li>
+                  Откройте сайт в <strong>Safari</strong> (не Chrome)
+                </li>
+                <li>
+                  Нажмите кнопку <strong>Поделиться</strong>
+                </li>
+                <li>
+                  Выберите <strong>На экран «Домой»</strong>
+                </li>
+                <li>
+                  Подтвердите <strong>Добавить</strong>
+                </li>
+                <li>
+                  Откройте иконку с домашнего экрана и в Настройках нажмите <strong>Подключить уведомления</strong>
+                </li>
+              </ol>
+            ) : (
+              <ol>
+                <li>
+                  В Chrome / Edge откройте меню <strong>⋮</strong>
+                </li>
+                <li>
+                  Выберите <strong>Установить приложение…</strong>
+                </li>
+                <li>Или нажмите иконку установки в адресной строке</li>
+              </ol>
+            )}
+            <p className="muted">
+              На iPhone пуши не работают во вкладке Safari — только из приложения на «Домой» (нужен iOS 16.4+).
+            </p>
+          </div>
+          <div className="install-modal__footer">
+            <button type="button" className="btn" onClick={() => setShowIosHelp(false)}>
+              Понятно
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+
   return (
     <>
       <button
@@ -42,53 +93,7 @@ export function InstallAppButton({ className = 'btn', label = 'Скачать п
       >
         {busy ? 'Установка…' : label}
       </button>
-
-      {showIosHelp && (
-        <div className="install-modal-backdrop" role="dialog" aria-modal="true" onClick={() => setShowIosHelp(false)}>
-          <div className="install-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="install-modal__body">
-              <h2>Как установить «Ресурс»</h2>
-              {ios ? (
-                <ol>
-                  <li>
-                    Откройте сайт в <strong>Safari</strong> (не Chrome)
-                  </li>
-                  <li>
-                    Нажмите кнопку <strong>Поделиться</strong>
-                  </li>
-                  <li>
-                    Выберите <strong>На экран «Домой»</strong>
-                  </li>
-                  <li>
-                    Подтвердите <strong>Добавить</strong>
-                  </li>
-                  <li>
-                    Откройте иконку с домашнего экрана и в Настройках нажмите <strong>Подключить уведомления</strong>
-                  </li>
-                </ol>
-              ) : (
-                <ol>
-                  <li>
-                    В Chrome / Edge откройте меню <strong>⋮</strong>
-                  </li>
-                  <li>
-                    Выберите <strong>Установить приложение…</strong>
-                  </li>
-                  <li>Или нажмите иконку установки в адресной строке</li>
-                </ol>
-              )}
-              <p className="muted">
-                На iPhone пуши не работают во вкладке Safari — только из приложения на «Домой» (нужен iOS 16.4+).
-              </p>
-            </div>
-            <div className="install-modal__footer">
-              <button type="button" className="btn" onClick={() => setShowIosHelp(false)}>
-                Понятно
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {helpModal}
     </>
   )
 }

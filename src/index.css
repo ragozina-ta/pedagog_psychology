@@ -856,7 +856,8 @@ a.btn {
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: auto;
   background:
     linear-gradient(165deg, rgba(49, 70, 79, 0.55) 0%, rgba(112, 58, 20, 0.35) 45%, rgba(205, 193, 173, 0.2) 100%),
     radial-gradient(ellipse 90% 60% at 50% 0%, rgba(236, 208, 156, 0.55), transparent 60%),
