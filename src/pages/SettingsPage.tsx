@@ -53,8 +53,7 @@ export function SettingsPage() {
         )}
 
         <p className="muted">
-          Сейчас включён тестовый режим: пуши примерно каждые 30 секунд. В проде — утро (аффирмация), дневник и
-          активность друзей.
+          Уведомления: утренняя аффирмация, напоминание о дневнике и активность друзей (по расписанию).
         </p>
         <div className="btn-row">
           <button type="button" className="btn" onClick={() => void syncPush()}>

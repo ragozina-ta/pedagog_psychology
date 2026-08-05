@@ -38,7 +38,7 @@ AFFIRMATIONS_SAMPLE = [
 ]
 
 # Для тестов: PUSH_TEST_MODE=1 и интервал в секундах (по умолчанию 30)
-PUSH_TEST_MODE = os.getenv("PUSH_TEST_MODE", "1").strip() in {"1", "true", "yes"}
+PUSH_TEST_MODE = os.getenv("PUSH_TEST_MODE", "0").strip() in {"1", "true", "yes"}
 PUSH_TEST_INTERVAL_SEC = int(os.getenv("PUSH_TEST_INTERVAL_SEC", "30"))
 
 
