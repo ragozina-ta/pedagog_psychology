@@ -14,7 +14,7 @@ type Msg = {
 
 export function ChatPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'school' | 'bot' | 'challenges'>('school')
+  const [tab, setTab] = useState<'school' | 'bot' | 'challenges'>('bot')
   const [roomId, setRoomId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Msg[]>([])
   const [text, setText] = useState('')
@@ -146,7 +146,7 @@ export function ChatPage() {
               </div>
             ))}
           </div>
-          <div className="btn-row">
+          <div className="chat-action-stack">
             <button type="button" className="btn danger" onClick={() => void sendBot(true)}>
               Тревога
             </button>

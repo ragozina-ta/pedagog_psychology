@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 /** Demo credentials (frontend-only). */
@@ -118,9 +118,6 @@ export function AuthPage() {
           </button>
         </div>
       </form>
-      <p className="muted" style={{ marginTop: 12 }}>
-        <Link to="/share/demo">Публичный профиль</Link> доступен по ссылке-токену после входа.
-      </p>
     </div>
   )
 }

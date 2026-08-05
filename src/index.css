@@ -149,7 +149,7 @@ p {
 .main {
   width: min(1100px, 100%);
   margin: 0 auto;
-  padding: 1.1rem 1.1rem 6rem;
+  padding: 1.1rem 1.1rem calc(7.5rem + env(safe-area-inset-bottom));
 }
 
 .bottom-nav {
@@ -266,10 +266,20 @@ p {
 .field textarea,
 .field select {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.7rem 0.85rem;
   background: #fff;
+}
+
+.field input[type='date'] {
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .field textarea {
@@ -292,6 +302,87 @@ p {
   flex-wrap: wrap;
   gap: 0.4rem;
   margin: 0.6rem 0 1rem;
+}
+
+.wish-sector-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  margin: 0.6rem 0 1rem;
+}
+
+.wish-sector-chips .chip {
+  width: 100%;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
+  padding: 0.55rem 0.5rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wish-board {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #fffaf3;
+  box-shadow: var(--shadow);
+}
+
+.wish-board__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  height: 100%;
+}
+
+.wish-board__cell {
+  position: relative;
+  border: 1px solid rgba(28, 36, 33, 0.08);
+  padding: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.wish-board__cell-label {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.15rem 0.1rem;
+}
+
+.wish-board__thumbs {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 4px;
+  align-content: start;
+}
+
+.chat-action-stack {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+  justify-items: stretch;
+}
+
+.chat-action-stack .btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
+  min-height: 48px;
 }
 
 .chip {

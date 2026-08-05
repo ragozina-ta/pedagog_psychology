@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthContext'
 import { WHEEL_SPHERES } from '../data/wheel'
 import { cardsForCategories } from '../data/cards'
 import type { WheelSphereId } from '../types'
+import { dataUrlToBlob, saveBlob } from '../utils/download'
 
 const COLORS = ['#703a14', '#a46957', '#c18636', '#31464f', '#ecd09c', '#8b5a2b', '#5c6b52', '#9c5a4a']
 
@@ -37,6 +38,8 @@ export function WheelPage() {
   const [values, setValues] = useState<Record<WheelSphereId, number>>(defaultValues)
   const [saveMsg, setSaveMsg] = useState('')
   const [lastSaved, setLastSaved] = useState<string | null>(null)
+  const [dlMsg, setDlMsg] = useState('')
+  const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
     void (async () => {
@@ -125,6 +128,39 @@ export function WheelPage() {
     }
   }
 
+  const downloadWheelPng = async () => {
+    const svg = svgRef.current
+    if (!svg) return
+    setDlMsg('Готовим изображение…')
+    try {
+      const clone = svg.cloneNode(true) as SVGSVGElement
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      const xml = new XMLSerializer().serializeToString(clone)
+      const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image()
+        el.onload = () => resolve(el)
+        el.onerror = reject
+        el.src = url
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = 960
+      canvas.height = 960
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('canvas')
+      ctx.fillStyle = '#f7f1e6'
+      ctx.fillRect(0, 0, 960, 960)
+      ctx.drawImage(img, 40, 40, 880, 880)
+      URL.revokeObjectURL(url)
+      const blob = await dataUrlToBlob(canvas.toDataURL('image/png'))
+      const res = await saveBlob(blob, 'koleso-balansa.png')
+      setDlMsg(res.ok ? 'Картинка сохранена' : res.error)
+    } catch (e) {
+      setDlMsg(e instanceof Error ? e.message : 'Не удалось сохранить')
+    }
+  }
+
   if (step === 'intro') {
     return (
       <div>
@@ -168,7 +204,13 @@ export function WheelPage() {
             Сохранено: {format(parseISO(lastSaved), 'd MMMM yyyy, HH:mm', { locale: ru })}
           </p>
         )}
-        <svg className="sector-wheel" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Колесо баланса">
+        <svg
+          ref={svgRef}
+          className="sector-wheel"
+          viewBox={`0 0 ${size} ${size}`}
+          role="img"
+          aria-label="Колесо баланса"
+        >
           {sectors.map((sec) =>
             sec.rings.map((ring) => (
               <path
@@ -212,7 +254,18 @@ export function WheelPage() {
             </button>
           </div>
         )}
+        {step === 'result' && (
+          <div className="btn-row">
+            <button type="button" className="btn secondary" onClick={() => void downloadWheelPng()}>
+              Скачать картинку колеса
+            </button>
+            <button type="button" className="btn ghost" onClick={() => setStep('fill')}>
+              Изменить оценки
+            </button>
+          </div>
+        )}
         {saveMsg && <p className="muted">{saveMsg}</p>}
+        {dlMsg && <p className="muted">{dlMsg}</p>}
       </div>
 
       {step === 'result' && (

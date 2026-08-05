@@ -95,6 +95,13 @@ export function HomePage() {
             </button>
           ))}
         </div>
+        {mood && mood !== 'happy' && (
+          <div className="btn-row">
+            <Link className="btn secondary" to="/resources?open=r1">
+              Сделать технику из ресурсного банка
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="playing-card-wrap">

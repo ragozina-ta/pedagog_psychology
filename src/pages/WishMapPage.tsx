@@ -150,7 +150,7 @@ export function WishMapPage() {
       </section>
 
       <div className="panel" style={{ marginBottom: '1rem' }}>
-        <div className="chip-row">
+        <div className="wish-sector-chips">
           {SECTORS.map((s) => (
             <button
               key={s.id}
@@ -212,46 +212,16 @@ export function WishMapPage() {
         </div>
       </div>
 
-      <div
-        ref={boardRef}
-        style={{
-          position: 'relative',
-          aspectRatio: '1',
-          borderRadius: 24,
-          overflow: 'hidden',
-          border: '1px solid var(--line)',
-          background: '#fffaf3',
-          boxShadow: 'var(--shadow)',
-        }}
-      >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', height: '100%' }}>
-          {SECTORS.map((s, idx) => {
+      <div ref={boardRef} className="wish-board">
+        <div className="wish-board__grid">
+          {SECTORS.map((s) => {
             const images = wishImages.filter((i) => i.sector === s.id)
-            const labelPos =
-              idx === 0
-                ? { top: 8, left: 8 }
-                : idx === 1
-                  ? { top: 8, right: 8, textAlign: 'right' as const }
-                  : idx === 2
-                    ? { bottom: 8, left: 8 }
-                    : { bottom: 8, right: 8, textAlign: 'right' as const }
             return (
-              <div
-                key={s.id}
-                style={{
-                  position: 'relative',
-                  border: '1px solid rgba(28,36,33,0.08)',
-                  padding: 8,
-                  paddingTop: idx < 2 ? 36 : 8,
-                  paddingBottom: idx >= 2 ? 36 : 8,
-                  background: `${s.color}10`,
-                  overflow: 'hidden',
-                }}
-              >
-                <div className="wish-sector-label" style={{ position: 'absolute', ...labelPos, color: s.color, zIndex: 1 }}>
+              <div key={s.id} className="wish-board__cell" style={{ background: `${s.color}12` }}>
+                <div className="wish-board__cell-label" style={{ color: s.color }}>
                   {s.label}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(56px, 1fr))', gap: 6 }}>
+                <div className="wish-board__thumbs">
                   {images.map((img) => (
                     <button
                       key={img.id}

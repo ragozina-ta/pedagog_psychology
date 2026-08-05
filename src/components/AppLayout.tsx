@@ -7,7 +7,7 @@ const bottom = [
   { to: '/', label: 'Главная', ico: '⌂', end: true },
   { to: '/garden', label: 'Мой сад', ico: '❀' },
   { to: '/diary', label: 'Дневник', ico: '✎' },
-  { to: '/chat', label: 'Чат', ico: '💬' },
+  { to: '/chat', label: 'Чат', ico: '✉' },
 ]
 
 const desktop = [
