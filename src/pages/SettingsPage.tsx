@@ -1,51 +1,70 @@
-import { useAppStore } from '../store/useAppStore'
+import { useEffect, useState } from 'react'
+import { pushApi } from '../api/client'
+import { useAuth } from '../auth/AuthContext'
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = atob(base64)
+  const arr = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i)
+  return arr
+}
 
 export function SettingsPage() {
-  const settings = useAppStore((s) => s.settings)
-  const updateSettings = useAppStore((s) => s.updateSettings)
+  const { profile } = useAuth()
+  const [status, setStatus] = useState('')
+
+  useEffect(() => {
+    setStatus(Notification?.permission === 'granted' ? 'Уведомления разрешены' : 'Уведомления не включены')
+  }, [])
+
+  const enablePush = async () => {
+    try {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        setStatus('Push не поддерживается в этом браузере')
+        return
+      }
+      const perm = await Notification.requestPermission()
+      if (perm !== 'granted') {
+        setStatus('Разрешение не выдано')
+        return
+      }
+      const { publicKey } = await pushApi.vapid()
+      if (!publicKey) {
+        setStatus('VAPID-ключ не настроен на сервере. Подписка сохранена локально как готовность.')
+        return
+      }
+      const reg = await navigator.serviceWorker.ready
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      })
+      await pushApi.subscribe(sub.toJSON())
+      setStatus('Подписка на push оформлена')
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : 'Ошибка push')
+    }
+  }
 
   return (
     <div>
       <section className="page-hero">
         <h1>Настройки</h1>
-        <p>
-          Приложение работает без сервера. Для расширенного ИИ-компаса можно указать ключ
-          OpenAI-совместимого API — он хранится только в браузере.
-        </p>
+        <p>ИИ-компас работает через сервер. Ключ OpenAI хранится только на бэкенде.</p>
       </section>
-
       <div className="panel">
-        <div className="field">
-          <label htmlFor="apiKey">API-ключ (опционально)</label>
-          <input
-            id="apiKey"
-            type="password"
-            value={settings.openaiApiKey}
-            onChange={(e) => updateSettings({ openaiApiKey: e.target.value })}
-            placeholder="sk-..."
-            autoComplete="off"
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="baseUrl">Base URL</label>
-          <input
-            id="baseUrl"
-            value={settings.openaiBaseUrl}
-            onChange={(e) => updateSettings({ openaiBaseUrl: e.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="model">Модель</label>
-          <input
-            id="model"
-            value={settings.openaiModel}
-            onChange={(e) => updateSettings({ openaiModel: e.target.value })}
-          />
-        </div>
-        <p className="muted">
-          Без ключа компас отвечает локальными сценариями поддержки, техниками и кнопкой «Тревога».
-          Ключ никогда не уходит на наш сервер — запросов к бэкенду нет.
+        <p>
+          {profile?.email} · {profile?.school?.name}
         </p>
+        <p className="muted">
+          Пуши: утром аффирмация (~07:45), раз в 3 дня вечером — мягкое приглашение в дневник, уведомление об активности
+          друга.
+        </p>
+        <button type="button" className="btn" onClick={() => void enablePush()}>
+          Включить уведомления
+        </button>
+        <p className="muted">{status}</p>
       </div>
     </div>
   )

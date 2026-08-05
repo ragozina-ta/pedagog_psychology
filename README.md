@@ -1,59 +1,39 @@
-# Ресурс педагога
+# Ресурс педагога (fullstack)
 
-PWA для самоподдержки педагогов: колесо баланса, карта желаний, карточки дня, дневник, психологический компас, аффирмации и ресурсный банк.
+PWA + FastAPI: личный кабинет, сад, ачивки, друзья, чат школы, админ-панель.
 
-## Стек
+## Быстрый старт
 
-- React + TypeScript + Vite
-- PWA (`vite-plugin-pwa`)
-- Zustand + localStorage (без бэкенда)
-- Recharts, jsPDF, html2canvas
+### Backend
+```bash
+cd backend
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
 
-## Запуск
+Опционально Postgres: `docker compose up -d` в `backend/` (см. `DATABASE_URL` в compose).
 
+Push-воркер: `python worker.py` (нужны VAPID-ключи в `.env`).
+
+ИИ: задайте `OPENAI_API_KEY` в `backend/.env`.
+
+### Frontend
 ```bash
 npm install
+# .env
+echo VITE_API_URL=http://127.0.0.1:8000 > .env
 npm run dev
 ```
 
-Сборка:
+GitHub Pages: `VITE_API_URL` должен указывать на задеплоенный API (не на Pages).
 
-```bash
-npm run build
-npm run preview
-```
+## Роли
+- **teacher** — весь функционал, сад, друзья
+- **admin** — создаёт школу при регистрации, панель `/admin`, код приглашения, похвала, отчёт
 
-## Модули
-
-1. **Колесо баланса** — 8 сфер, подсказки при балле &lt; 4, динамика срезов
-2. **Карта желаний** — 4 сектора из картинок, фото в центре, PDF
-3. **Карточки дня** — колода микрозаданий, PDF одной карточки или всей колоды
-4. **Дневник** — шаблоны рефлексии, график настроения, облако слов, PDF за период
-5. **Психологический компас** — локальные сценарии + опциональный OpenAI-совместимый API-ключ; кнопка «Тревога»
-6. **Аффирмации** — фраза дня + PNG-заставка
-7. **Ресурсный банк** — техники, скрипты, идеи, медитации
-
-API-ключ для ИИ задаётся в **Настройки** и хранится только в браузере.
-
-## GitHub Pages
-
-Сайт: https://ragozina-ta.github.io/pedagog_psychology/
-
-### Один раз в настройках репозитория
-
-1. Откройте **Settings → Pages**
-2. **Source**: GitHub Actions
-3. Закоммитьте и запушьте изменения в `main` (workflow `.github/workflows/deploy-pages.yml` соберёт и задеплоит `dist`)
-
-### После пуша
-
-- Вкладка **Actions** → дождитесь зелёного workflow **Deploy GitHub Pages**
-- Через 1–2 минуты откройте ссылку выше
-- Установка PWA: в Chrome/Edge — «Установить приложение»; на iPhone — Safari → Поделиться → На экран «Домой»
-
-Локальная проверка сборки с тем же `base`:
-
-```bash
-npm run build
-npm run preview
-```
+## Где нужен бэкенд
+Роли, школа, друзья/полив, чат, админ-рейтинг, серверный ИИ, пуши, доверенные очки/ачивки/серия.

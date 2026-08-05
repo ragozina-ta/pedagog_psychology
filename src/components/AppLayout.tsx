@@ -1,26 +1,29 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { InstallAppButton } from './InstallAppButton'
+import { useAuth } from '../auth/AuthContext'
 
-const links = [
+const bottom = [
   { to: '/', label: 'Главная', ico: '⌂', end: true },
-  { to: '/wheel', label: 'Баланс', ico: '◎' },
+  { to: '/garden', label: 'Мой сад', ico: '❀' },
   { to: '/diary', label: 'Дневник', ico: '✎' },
-  { to: '/compass', label: 'Компас', ico: '◈' },
+  { to: '/chat', label: 'Чат', ico: '◈' },
 ]
 
-const allLinks = [
+const desktop = [
   { to: '/', label: 'Главная', end: true },
-  { to: '/wheel', label: 'Баланс' },
-  { to: '/wish-map', label: 'Желания' },
-  { to: '/cards', label: 'Карточки' },
+  { to: '/garden', label: 'Сад' },
   { to: '/diary', label: 'Дневник' },
-  { to: '/compass', label: 'Компас' },
+  { to: '/chat', label: 'Чат' },
+  { to: '/wheel', label: 'Баланс' },
   { to: '/affirmations', label: 'Аффирмации' },
+  { to: '/cards', label: 'Карточки' },
   { to: '/resources', label: 'Банк' },
-  { to: '/settings', label: 'Настройки' },
+  { to: '/wish-map', label: 'Желания' },
 ]
 
 export function AppLayout() {
+  const { profile, logout } = useAuth()
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -28,17 +31,29 @@ export function AppLayout() {
           <div className="brand-mark">Р</div>
           <div className="brand-text">
             <strong>Ресурс</strong>
-            <span>пространство заботы о педагоге</span>
+            <span>
+              {profile ? `${profile.full_name} · серия ${profile.streak}` : 'пространство заботы'}
+            </span>
           </div>
         </NavLink>
         <div className="topbar-actions">
           <InstallAppButton className="btn install-btn" label="Скачать" />
+          {profile && (
+            <button type="button" className="btn ghost install-btn" onClick={logout}>
+              Выйти
+            </button>
+          )}
           <nav className="desktop-nav">
-            {allLinks.map((l) => (
+            {desktop.map((l) => (
               <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
                 {l.label}
               </NavLink>
             ))}
+            {profile?.role === 'admin' && (
+              <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
+                Админ
+              </NavLink>
+            )}
           </nav>
         </div>
       </header>
@@ -46,7 +61,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <nav className="bottom-nav">
-        {links.map((l) => (
+        {bottom.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
             <span className="ico">{l.ico}</span>
             {l.label}

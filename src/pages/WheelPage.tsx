@@ -1,156 +1,203 @@
-import { useMemo, useRef } from 'react'
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { wheelApi } from '../api/client'
+import { useAuth } from '../auth/AuthContext'
 import { WHEEL_SPHERES } from '../data/wheel'
-import { useAppStore } from '../store/useAppStore'
+import { cardsForCategories } from '../data/cards'
 import type { WheelSphereId } from '../types'
 
-const COLORS = ['#1a4a45', '#2f6b64', '#7d9b8a', '#c47b3b', '#e8b86d', '#5a6862', '#3d7a72', '#a67c52']
+const COLORS = ['#703a14', '#a46957', '#c18636', '#31464f', '#ecd09c', '#8b5a2b', '#5c6b52', '#9c5a4a']
 
-function polar(cx: number, cy: number, r: number, angle: number) {
-  const a = (Math.PI / 180) * angle
-  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }
-}
+const INTRO = `Это колесо — не экзамен, не отчёт и не проверка.
+Оно для вас, чтобы увидеть, куда уходят силы и что можно мягко скорректировать.
+
+Как заполнять:
+· Оцените каждую сферу по шкале от 0 до 10, где 0 — совсем не устраивает, 10 — полностью удовлетворяет.
+· Отвечайте быстро, не задумываясь — первое ощущение самое честное.
+
+Что будет дальше:
+· Сразу после заполнения вы увидите свой «слепок» состояния.
+· Мы подскажем, где вы сильны, и предложим не более 3 микро-шагов в тех зонах, где захотите что-то изменить.
+
+Важно:
+Нет «правильного» результата — есть только ваше текущее состояние.
+Баланс — про гибкость, а не про идеальность.
+
+Заполнение займёт около 2 минут.`
 
 export function WheelPage() {
-  const values = useAppStore((s) => s.wheelCurrent)
-  const history = useAppStore((s) => s.wheelHistory)
-  const setWheelValue = useAppStore((s) => s.setWheelValue)
-  const saveWheelSnapshot = useAppStore((s) => s.saveWheelSnapshot)
-  const selectedRef = useRef<WheelSphereId>('meaning')
-
-  const lowSpheres = WHEEL_SPHERES.filter((s) => values[s.id] < 4)
-
-  const chartData = useMemo(
-    () =>
-      history.slice(-12).map((h) => ({
-        date: format(new Date(h.date), 'd MMM', { locale: ru }),
-        avg: Number(
-          (Object.values(h.values).reduce((a, b) => a + b, 0) / 8).toFixed(1),
-        ),
-      })),
-    [history],
+  const { refresh } = useAuth()
+  const [step, setStep] = useState<'intro' | 'fill' | 'result'>('intro')
+  const [values, setValues] = useState<Record<WheelSphereId, number>>(() =>
+    Object.fromEntries(WHEEL_SPHERES.map((s) => [s.id, 5])) as Record<WheelSphereId, number>,
   )
 
   const size = 320
   const cx = size / 2
   const cy = size / 2
-  const maxR = 120
+  const outerR = 130
   const n = WHEEL_SPHERES.length
 
-  const polygon = WHEEL_SPHERES.map((s, i) => {
-    const angle = -90 + (360 / n) * i
-    const r = (values[s.id] / 10) * maxR
-    const p = polar(cx, cy, r, angle)
-    return `${p.x},${p.y}`
-  }).join(' ')
+  const sectors = useMemo(() => {
+    return WHEEL_SPHERES.map((s, i) => {
+      const start = -90 + (360 / n) * i
+      const end = start + 360 / n
+      const val = values[s.id]
+      const rings = []
+      for (let lvl = 1; lvl <= 10; lvl++) {
+        const r0 = (outerR / 10) * (lvl - 1)
+        const r1 = (outerR / 10) * lvl
+        rings.push({ lvl, r0, r1, filled: lvl <= val })
+      }
+      return { sphere: s, i, start, end, rings, color: COLORS[i] }
+    })
+  }, [values])
+
+  function polar(r: number, angle: number) {
+    const a = (Math.PI / 180) * angle
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }
+  }
+
+  function arcPath(r0: number, r1: number, start: number, end: number) {
+    const p1 = polar(r1, start)
+    const p2 = polar(r1, end)
+    const p3 = polar(r0, end)
+    const p4 = polar(r0, start)
+    const large = end - start > 180 ? 1 : 0
+    return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 ${large} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r0} ${r0} 0 ${large} 0 ${p4.x} ${p4.y} Z`
+  }
+
+  const low = WHEEL_SPHERES.filter((s) => values[s.id] < 5)
+  const strong = WHEEL_SPHERES.filter((s) => values[s.id] >= 7)
+  const tipCards = cardsForCategories(
+    low.slice(0, 3).map((s) => {
+      const map: Record<string, string> = {
+        rest: 'Ресурс',
+        health: 'Тело',
+        children: 'Контакт',
+        support: 'Поддержка',
+        meaning: 'Смысл',
+        growth: 'Мышление',
+        family: 'Принятие',
+        finance: 'Границы',
+      }
+      return map[s.id] || 'Ресурс'
+    }),
+    3,
+  )
+
+  const finish = async () => {
+    try {
+      await wheelApi.save(values)
+      await refresh()
+    } catch {
+      /* */
+    }
+    setStep('result')
+  }
+
+  if (step === 'intro') {
+    return (
+      <div>
+        <section className="page-hero">
+          <h1>Колесо баланса педагога</h1>
+          <p>
+            Колесо названо так, потому что оно показывает движение: если одна сфера «проседает», колесо перестаёт
+            катиться ровно — и это сразу видно.
+          </p>
+        </section>
+        <div className="panel">
+          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: 'var(--ink-muted)', margin: 0 }}>
+            {INTRO}
+          </pre>
+          <div className="btn-row">
+            <button type="button" className="btn" onClick={() => setStep('fill')}>
+              Начать заполнение
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
       <section className="page-hero">
-        <h1>Колесо баланса педагога</h1>
-        <p>Оцените 8 сфер от 1 до 10. При значении ниже 4 появятся бережные подсказки.</p>
+        <h1>Колесо баланса</h1>
+        <p>8 секторов, каждый из 10 частей. Ползунок закрашивает сегменты сектора.</p>
       </section>
 
-      <div className="panel" style={{ display: 'grid', gap: '1.25rem', justifyItems: 'center' }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Колесо баланса">
-          {[2, 4, 6, 8, 10].map((lvl) => (
-            <circle
-              key={lvl}
-              cx={cx}
-              cy={cy}
-              r={(lvl / 10) * maxR}
-              fill="none"
-              stroke="rgba(28,36,33,0.1)"
-            />
-          ))}
-          {WHEEL_SPHERES.map((s, i) => {
-            const angle = -90 + (360 / n) * i
-            const outer = polar(cx, cy, maxR + 8, angle)
-            const label = polar(cx, cy, maxR + 28, angle)
-            return (
-              <g key={s.id}>
-                <line x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="rgba(28,36,33,0.12)" />
-                <circle cx={polar(cx, cy, (values[s.id] / 10) * maxR, angle).x} cy={polar(cx, cy, (values[s.id] / 10) * maxR, angle).y} r={5} fill={COLORS[i]} />
-                <text
-                  x={label.x}
-                  y={label.y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="9"
-                  fill="#1a4a45"
-                >
-                  {s.label.split(' ')[0]}
-                </text>
-              </g>
-            )
-          })}
-          <polygon points={polygon} fill="rgba(47,107,100,0.28)" stroke="#1a4a45" strokeWidth="2" />
+      <div className="panel" style={{ textAlign: 'center' }}>
+        <svg className="sector-wheel" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Колесо баланса">
+          {sectors.map((sec) =>
+            sec.rings.map((ring) => (
+              <path
+                key={`${sec.sphere.id}-${ring.lvl}`}
+                d={arcPath(ring.r0 + 1, ring.r1, sec.start + 1, sec.end - 1)}
+                fill={ring.filled ? sec.color : 'rgba(49,70,79,0.06)'}
+                stroke="rgba(247,241,230,0.8)"
+                strokeWidth={0.8}
+                opacity={ring.filled ? 0.9 : 0.5}
+              />
+            )),
+          )}
+          <circle cx={cx} cy={cy} r={18} fill="#f7f1e6" stroke="#703a14" />
         </svg>
 
-        <div style={{ width: '100%', display: 'grid', gap: '0.85rem' }}>
+        <div style={{ textAlign: 'left', marginTop: 16 }}>
           {WHEEL_SPHERES.map((s, i) => (
-            <div key={s.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <label htmlFor={s.id} style={{ fontWeight: 600, color: 'var(--brand)' }}>
+            <div key={s.id} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontWeight: 600, color: 'var(--brand)' }}>
                   <span style={{ color: COLORS[i] }}>●</span> {s.label}
                 </label>
                 <strong>{values[s.id]}</strong>
               </div>
               <input
-                id={s.id}
                 type="range"
-                min={1}
+                min={0}
                 max={10}
                 value={values[s.id]}
-                onChange={(e) => {
-                  selectedRef.current = s.id
-                  setWheelValue(s.id, Number(e.target.value))
-                }}
+                onChange={(e) => setValues((v) => ({ ...v, [s.id]: Number(e.target.value) }))}
                 style={{ width: '100%' }}
               />
             </div>
           ))}
         </div>
 
-        <div className="btn-row" style={{ width: '100%' }}>
-          <button type="button" className="btn" onClick={() => saveWheelSnapshot()}>
-            Сохранить срез
-          </button>
-        </div>
+        {step === 'fill' && (
+          <div className="btn-row">
+            <button type="button" className="btn" onClick={() => void finish()}>
+              Сохранить слепок
+            </button>
+          </div>
+        )}
       </div>
 
-      {lowSpheres.length > 0 && (
-        <div style={{ marginTop: '1rem' }}>
-          <h2 style={{ color: 'var(--brand)' }}>Подсказки</h2>
-          {lowSpheres.map((s) => (
-            <div key={s.id} className="hint">
-              <strong>{s.label} ({values[s.id]})</strong>
-              <div>{s.hint}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {chartData.length > 0 && (
-        <div className="panel" style={{ marginTop: '1rem', height: 260 }}>
-          <h2 style={{ color: 'var(--brand)', marginBottom: '0.75rem' }}>Динамика среднего балла</h2>
-          <ResponsiveContainer width="100%" height="80%">
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" stroke="#5a6862" fontSize={12} />
-              <YAxis domain={[1, 10]} stroke="#5a6862" fontSize={12} />
-              <Tooltip />
-              <Line type="monotone" dataKey="avg" stroke="#1a4a45" strokeWidth={2} dot />
-            </LineChart>
-          </ResponsiveContainer>
+      {step === 'result' && (
+        <div className="panel" style={{ marginTop: '1rem' }}>
+          <h2 style={{ color: 'var(--brand)' }}>Спасибо, что нашли время для себя</h2>
+          <p>
+            Вы сильны в сферах, где поставили 7 и выше — это ваши опоры
+            {strong.length ? `: ${strong.map((s) => s.label).join(', ')}` : ''}.
+          </p>
+          <p>
+            Сферы с оценкой ниже 5 — не провалы, а точки роста
+            {low.length ? `: ${low.map((s) => s.label).join(', ')}` : ''}.
+          </p>
+          {tipCards.length > 0 && (
+            <>
+              <h3 style={{ color: 'var(--brand)' }}>3 карточки дня</h3>
+              {tipCards.map((c) => (
+                <div key={c.id} className="hint">
+                  <strong>{c.title}</strong> — {c.task}
+                </div>
+              ))}
+              <Link className="btn secondary" to="/cards">
+                К колоде карточек
+              </Link>
+            </>
+          )}
         </div>
       )}
     </div>
