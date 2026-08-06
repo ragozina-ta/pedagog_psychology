@@ -1,4 +1,6 @@
 /** Generate script content — full 120 affirmations */
+import { deviceDailyPick } from '../utils/deviceDailyPick'
+
 export type AffirmationCategory =
   | 'confidence'
   | 'mission'
@@ -190,9 +192,7 @@ export const AFFIRMATIONS: Affirmation[] = RAW.flatMap(([category, texts], ci) =
 )
 
 export function affirmationForDate(date = new Date()): Affirmation {
-  const start = new Date(date.getFullYear(), 0, 0)
-  const day = Math.floor((date.getTime() - start.getTime()) / 86400000)
-  return AFFIRMATIONS[day % AFFIRMATIONS.length]
+  return deviceDailyPick('home-affirmation', AFFIRMATIONS, (a) => a.id, date)
 }
 
 export function randomAffirmation(excludeId?: string): Affirmation {

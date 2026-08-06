@@ -1,3 +1,5 @@
+import { deviceDailyPick } from '../utils/deviceDailyPick'
+
 export type CardCategory =
   | 'Ресурс'
   | 'Контакт'
@@ -175,9 +177,7 @@ export const DAILY_CARDS: DailyCard[] = PACK.flatMap(([category, tasks]) =>
 )
 
 export function cardForDate(date = new Date()): DailyCard {
-  const start = new Date(date.getFullYear(), 0, 0)
-  const day = Math.floor((date.getTime() - start.getTime()) / 86400000)
-  return DAILY_CARDS[day % DAILY_CARDS.length]
+  return deviceDailyPick('home-card', DAILY_CARDS, (c) => c.id, date)
 }
 
 export function cardsForCategories(categories: string[], limit = 3): DailyCard[] {
