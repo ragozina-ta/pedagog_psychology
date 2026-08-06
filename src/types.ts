@@ -11,6 +11,8 @@ export type WheelSphereId =
 export interface WheelSphere {
   id: WheelSphereId
   label: string
+  /** Короткая подпись у сектора на диаграмме */
+  shortLabel: string
   hint: string
 }
 

@@ -60,11 +60,12 @@ export function WheelPage() {
     })()
   }, [])
 
-  const size = 420
+  const size = 500
   const cx = size / 2
   const cy = size / 2
-  const outerR = 118
-  const labelR = outerR + 36
+  const outerR = 112
+  /** Одинаковый радиус для всех подписей; якорь всегда middle — симметрия */
+  const labelR = outerR + 42
   const n = WHEEL_SPHERES.length
 
   const sectors = useMemo(() => {
@@ -88,16 +89,10 @@ export function WheelPage() {
     return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }
   }
 
-  function labelAnchor(mid: number): 'start' | 'middle' | 'end' {
-    const a = ((mid % 360) + 360) % 360
-    if (a > 20 && a < 160) return 'start'
-    if (a > 200 && a < 340) return 'end'
-    return 'middle'
-  }
-
-  function wrapLabel(label: string, maxLen = 14): string[] {
+  function wrapLabel(label: string, maxLen = 10): string[] {
     if (label.length <= maxLen) return [label]
-    const words = label.split(' ')
+    const words = label.split(/\s+/)
+    if (words.length === 1) return [label]
     const lines: string[] = []
     let cur = ''
     for (const w of words) {
@@ -253,8 +248,7 @@ export function WheelPage() {
           <circle cx={cx} cy={cy} r={18} fill="#f7f1e6" stroke="#703a14" />
           {sectors.map((sec) => {
             const p = polar(labelR, sec.mid)
-            const lines = wrapLabel(sec.sphere.label)
-            const anchor = labelAnchor(sec.mid)
+            const lines = wrapLabel(sec.sphere.shortLabel || sec.sphere.label)
             const lineH = 11
             const startY = p.y - ((lines.length - 1) * lineH) / 2
             return (
@@ -264,10 +258,10 @@ export function WheelPage() {
                     key={li}
                     x={p.x}
                     y={startY + li * lineH}
-                    textAnchor={anchor}
-                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    dominantBaseline="central"
                     fill={sec.color}
-                    style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Nunito, system-ui, sans-serif' }}
+                    style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Nunito, system-ui, sans-serif' }}
                   >
                     {line}
                   </text>

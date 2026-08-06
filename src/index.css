@@ -807,9 +807,11 @@ a.btn {
 }
 
 .sector-wheel {
-  width: min(420px, 100%);
+  width: min(100%, 460px);
+  max-width: 100%;
   margin: 0 auto;
   display: block;
+  overflow: visible;
 }
 
 .install-btn {
