@@ -84,11 +84,10 @@ class Profile(Base):
 
 class DiaryEntry(Base):
     __tablename__ = "diary_entries"
-    __table_args__ = (UniqueConstraint("user_id", "entry_date"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    entry_date: Mapped[date] = mapped_column(Date)
+    entry_date: Mapped[date] = mapped_column(Date, index=True)
     mood: Mapped[str] = mapped_column(String(16), default="5")  # "0".."10" or legacy happy|neutral|sad
     gratitude: Mapped[str] = mapped_column(Text, default="")
     reflection: Mapped[str] = mapped_column(Text, default="")

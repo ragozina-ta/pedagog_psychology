@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, subDays, startOfDay } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import {
   CartesianGrid,
@@ -82,6 +82,17 @@ function normalizeMood(raw: string | undefined): number {
   return 5
 }
 
+function entriesLastWeek(entries: Entry[]) {
+  const cutoff = startOfDay(subDays(new Date(), 6))
+  return entries.filter((e) => {
+    try {
+      return parseISO(e.entry_date) >= cutoff
+    } catch {
+      return false
+    }
+  })
+}
+
 function buildWordCloud(entries: Entry[]) {
   const counts = new Map<string, number>()
   for (const e of entries) {
@@ -94,7 +105,7 @@ function buildWordCloud(entries: Entry[]) {
   }
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 40)
+    .slice(0, 20)
     .map(([word, count]) => ({ word, count }))
 }
 
@@ -123,13 +134,12 @@ export function DiaryPage() {
     void loadList()
   }, [])
 
-  useEffect(() => {
-    const e = list.find((x) => x.entry_date === date)
-    setMood(normalizeMood(e?.mood))
-    setGratitude(e?.gratitude ?? '')
-    setReflection(e?.reflection ?? '')
-    setIntention(e?.intention ?? '')
-  }, [date, list])
+  const clearForm = () => {
+    setMood(5)
+    setGratitude('')
+    setReflection('')
+    setIntention('')
+  }
 
   const save = async () => {
     setSaving(true)
@@ -142,6 +152,7 @@ export function DiaryPage() {
         reflection,
         intention,
       })
+      clearForm()
       await loadList()
       await refresh()
       setStatus('Сохранено')
@@ -155,7 +166,7 @@ export function DiaryPage() {
   const chartData = useMemo(
     () =>
       [...list]
-        .sort((a, b) => a.entry_date.localeCompare(b.entry_date))
+        .sort((a, b) => a.entry_date.localeCompare(b.entry_date) || a.id - b.id)
         .map((e) => ({
           date: format(parseISO(e.entry_date), 'd MMM', { locale: ru }),
           mood: normalizeMood(e.mood),
@@ -163,7 +174,7 @@ export function DiaryPage() {
     [list],
   )
 
-  const words = useMemo(() => buildWordCloud(list), [list])
+  const words = useMemo(() => buildWordCloud(entriesLastWeek(list)), [list])
   const maxCount = words[0]?.count ?? 1
 
   return (
@@ -217,7 +228,7 @@ export function DiaryPage() {
             </div>
             <p className="muted">
               Заполняйте дневник тогда, когда чувствуете потребность. Для поддержания ритуала рекомендуем 2–3 раза в
-              неделю — этого достаточно, чтобы заметить динамику.
+              неделю — этого достаточно, чтобы заметить динамику. В один день можно сохранить несколько записей.
             </p>
             <div className="btn-row">
               <button type="button" className="btn" disabled={saving} onClick={() => void save()}>
@@ -249,7 +260,7 @@ export function DiaryPage() {
 
           {words.length > 0 && (
             <div className="panel" style={{ marginTop: '1rem' }}>
-              <h2 style={{ color: 'var(--brand)', fontSize: '1.1rem' }}>Облако слов</h2>
+              <h2 style={{ color: 'var(--brand)', fontSize: '1.1rem' }}>Облако слов за неделю</h2>
               <div className="word-cloud">
                 {words.map(({ word, count }) => (
                   <span key={word} style={{ fontSize: `${0.75 + (count / maxCount) * 1.1}rem` }}>

@@ -7,6 +7,11 @@ export async function elementToPdf(element: HTMLElement, filename: string) {
     scale: 2,
     useCORS: true,
     backgroundColor: '#ffffff',
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: element.scrollWidth,
+    windowHeight: element.scrollHeight,
   })
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageWidth = pdf.internal.pageSize.getWidth()

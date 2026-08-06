@@ -241,23 +241,7 @@ export function WishMapPage() {
             )
           })}
         </div>
-        <div
-          className="wish-center"
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'var(--brand)',
-            display: 'grid',
-            placeItems: 'center',
-            color: '#ecd09c',
-            fontWeight: 700,
-            fontSize: '0.75rem',
-          }}
-        >
-          {teacherPhoto ? <img src={teacherPhoto} alt="Педагог" /> : 'Вы'}
-        </div>
+        <div className="wish-center">{teacherPhoto ? <img src={teacherPhoto} alt="Педагог" /> : 'Вы'}</div>
       </div>
       <p className="muted" style={{ marginTop: '0.75rem' }}>
         Нажмите на картинку на карте, чтобы увеличить. Удаление — из просмотра.
