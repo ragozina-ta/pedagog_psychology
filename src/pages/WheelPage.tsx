@@ -60,16 +60,18 @@ export function WheelPage() {
     })()
   }, [])
 
-  const size = 320
+  const size = 420
   const cx = size / 2
   const cy = size / 2
-  const outerR = 130
+  const outerR = 118
+  const labelR = outerR + 36
   const n = WHEEL_SPHERES.length
 
   const sectors = useMemo(() => {
     return WHEEL_SPHERES.map((s, i) => {
       const start = -90 + (360 / n) * i
       const end = start + 360 / n
+      const mid = (start + end) / 2
       const val = values[s.id]
       const rings = []
       for (let lvl = 1; lvl <= 10; lvl++) {
@@ -77,13 +79,38 @@ export function WheelPage() {
         const r1 = (outerR / 10) * lvl
         rings.push({ lvl, r0, r1, filled: lvl <= val })
       }
-      return { sphere: s, i, start, end, rings, color: COLORS[i] }
+      return { sphere: s, i, start, end, mid, rings, color: COLORS[i] }
     })
   }, [values])
 
   function polar(r: number, angle: number) {
     const a = (Math.PI / 180) * angle
     return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }
+  }
+
+  function labelAnchor(mid: number): 'start' | 'middle' | 'end' {
+    const a = ((mid % 360) + 360) % 360
+    if (a > 20 && a < 160) return 'start'
+    if (a > 200 && a < 340) return 'end'
+    return 'middle'
+  }
+
+  function wrapLabel(label: string, maxLen = 14): string[] {
+    if (label.length <= maxLen) return [label]
+    const words = label.split(' ')
+    const lines: string[] = []
+    let cur = ''
+    for (const w of words) {
+      const next = cur ? `${cur} ${w}` : w
+      if (next.length > maxLen && cur) {
+        lines.push(cur)
+        cur = w
+      } else {
+        cur = next
+      }
+    }
+    if (cur) lines.push(cur)
+    return lines
   }
 
   function arcPath(r0: number, r1: number, start: number, end: number) {
@@ -224,6 +251,30 @@ export function WheelPage() {
             )),
           )}
           <circle cx={cx} cy={cy} r={18} fill="#f7f1e6" stroke="#703a14" />
+          {sectors.map((sec) => {
+            const p = polar(labelR, sec.mid)
+            const lines = wrapLabel(sec.sphere.label)
+            const anchor = labelAnchor(sec.mid)
+            const lineH = 11
+            const startY = p.y - ((lines.length - 1) * lineH) / 2
+            return (
+              <g key={`label-${sec.sphere.id}`}>
+                {lines.map((line, li) => (
+                  <text
+                    key={li}
+                    x={p.x}
+                    y={startY + li * lineH}
+                    textAnchor={anchor}
+                    dominantBaseline="middle"
+                    fill={sec.color}
+                    style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Nunito, system-ui, sans-serif' }}
+                  >
+                    {line}
+                  </text>
+                ))}
+              </g>
+            )
+          })}
         </svg>
 
         <div style={{ textAlign: 'left', marginTop: 16 }}>
