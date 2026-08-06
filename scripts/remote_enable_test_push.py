@@ -15,7 +15,7 @@ HOST = os.environ["SSH_HOST"]
 USER = os.environ["SSH_USER"]
 PASSWORD = os.environ["SSH_PASS"]
 REMOTE = "/opt/resource"
-
+ 
 
 def connect():
     c = paramiko.SSHClient()
